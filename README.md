@@ -10,6 +10,12 @@ A Django backend for automated trading signals: it receives/generates trading si
 - **execution** — order execution engine and async tasks (Celery).
 - **analytics** — P&L calculation and performance reporting.
 
+## Screenshots
+
+| Sign in | Dashboard |
+|---|---|
+| ![Sign in](docs/screenshots/login.png) | ![Dashboard](docs/screenshots/dashboard.png) |
+
 ## Stack
 
 - Django + Django REST Framework
