@@ -1,0 +1,2832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SignalBoxx</title>
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --subtle: #94a3b8;
+  --border: #e2e8f0;
+  --hover: #f1f5f9;
+  --black-btn: #0f172a;
+  --blue: #2563eb;
+  --blue-soft: #eff6ff;
+  --indigo: #4f46e5;
+  --green: #16a34a;
+  --green-soft: #f0fdf4;
+  --red: #dc2626;
+  --red-soft: #fef2f2;
+  --amber: #d97706;
+  --amber-soft: #fffbeb;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 20px 50px rgba(15, 23, 42, 0.15);
+}
+[data-theme="dark"] {
+  --bg: #0b0f17;
+  --surface: #151b26;
+  --text: #e8ecf2;
+  --muted: #8b95a7;
+  --subtle: #5f6b7e;
+  --border: #252d3a;
+  --hover: #1c2330;
+  --black-btn: #4f46e5;
+  --blue: #3b82f6;
+  --blue-soft: #18233d;
+  --indigo: #6366f1;
+  --green: #22c55e;
+  --green-soft: #10241a;
+  --red: #ef4444;
+  --red-soft: #2a1518;
+  --amber: #f59e0b;
+  --amber-soft: #2a2110;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+.theme-toggle { width:34px; height:34px; border:1px solid var(--border); background:var(--surface); border-radius:8px; cursor:pointer; font-size:15px; display:inline-flex; align-items:center; justify-content:center; transition:all .15s; color:var(--text); }
+.theme-toggle:hover { border-color:var(--indigo); }
+
+/* Dark-mode overrides for elements with hardcoded light colors */
+[data-theme="dark"] .topbar { background:rgba(21,27,38,0.88); }
+[data-theme="dark"] .quote-card { background:linear-gradient(135deg, #1b2433, #211c3a); border-color:#322d52; }
+[data-theme="dark"] .quote-meta { border-top-color:var(--border); }
+[data-theme="dark"] .confirm-hero.buy { background:linear-gradient(135deg, #10241a, #151b26); border-bottom-color:#1f5436; }
+[data-theme="dark"] .confirm-hero.sell { background:linear-gradient(135deg, #2a1518, #151b26); border-bottom-color:#62242b; }
+[data-theme="dark"] .connected-broker-tile { background:#10241a; }
+[data-theme="dark"] .disconnect-btn:hover { background:#2a1518; }
+[data-theme="dark"] .toast { background:#e8ecf2; color:#0f172a; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+.hidden { display: none !important; }
+button { font-family: inherit; }
+a { color: inherit; }
+
+/* Topbar */
+.topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 28px; background:rgba(255,255,255,0.85); backdrop-filter:blur(10px); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:50; }
+.brand { font-size:20px; font-weight:700; letter-spacing:-0.8px; display:flex; align-items:center; gap:8px; }
+.brand-dot { width:10px; height:10px; border-radius:50%; background:linear-gradient(135deg, var(--indigo), var(--blue)); display:inline-block; }
+.topbar-right { display:flex; align-items:center; gap:10px; }
+#userPill { display:none; align-items:center; gap:10px; background:var(--hover); padding:6px 6px 6px 14px; border-radius:22px; font-size:13px; font-weight:500; }
+#userPill .pill-out { padding:5px 10px; background:var(--surface); border-radius:18px; color:var(--muted); font-size:12px; cursor:pointer; border:1px solid var(--border); }
+#userPill .pill-out:hover { color:var(--text); }
+#roleBadge { display:none; padding:5px 12px; border-radius:20px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; background:var(--blue-soft); color:var(--blue); border:1px solid #c7d2fe; }
+#roleSwitchBtn { display:none; }
+.broker-pill { display:inline-flex; align-items:center; gap:8px; padding:6px 14px; background:var(--surface); border:1px solid var(--border); border-radius:22px; font-size:12px; font-weight:500; cursor:pointer; transition:all .12s; color:var(--text); }
+.broker-pill:hover { border-color:var(--subtle); background:var(--hover); }
+.broker-dot { width:8px; height:8px; border-radius:50%; background:var(--amber); display:inline-block; }
+.broker-pill.connected .broker-dot { background:var(--green); }
+.broker-pill.disconnected .broker-dot { background:var(--red); }
+
+.btn { padding:9px 16px; background:transparent; color:var(--text); border:1px solid var(--border); border-radius:var(--radius-sm); font-size:13px; font-weight:500; cursor:pointer; transition:all .12s ease; }
+.btn:hover { background:var(--hover); border-color:var(--subtle); }
+.btn-primary { background:var(--black-btn); color:#fff; border-color:var(--black-btn); }
+.btn-primary:hover { background:#1e293b; border-color:#1e293b; }
+.btn-link { background:transparent; border:none; color:var(--muted); cursor:pointer; font-size:13px; padding:4px 8px; }
+.btn-link:hover { color:var(--text); }
+.btn-ghost { background:transparent; border:none; color:var(--muted); padding:6px 10px; font-size:12px; cursor:pointer; border-radius:var(--radius-xs); }
+.btn-ghost:hover { background:var(--hover); color:var(--text); }
+
+main { max-width:100%; margin:0 auto; padding:20px 28px; }
+.grid { display:grid; gap:22px; }
+.grid-2 { grid-template-columns: minmax(0,1.4fr) minmax(0,1fr); }
+@media (max-width: 960px) { .grid-2 { grid-template-columns: 1fr; } }
+.grid-3-trade { display:grid; gap:18px; grid-template-columns: minmax(0,1.05fr) minmax(0,0.95fr) minmax(0,1fr); }
+@media (max-width: 1100px) { .grid-3-trade { grid-template-columns: 1fr; } }
+/* ===== TOS-style order ticket ===== */
+.tos-ticket { display:flex; flex-direction:column; gap:8px; padding:12px; }
+.tos-ticker-row { display:flex; gap:8px; align-items:center; }
+.tos-ticker-input-wrap { flex:1; }
+.tos-ticker-input { width:100%; padding:6px 10px; font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg); color:var(--text); outline:none; }
+.tos-ticker-input::placeholder { font-size:11px; font-weight:500; letter-spacing:.3px; }
+.tos-ticker-input:focus { border-color:var(--blue); }
+.tos-type-tabs { margin:0; flex-shrink:0; }
+.tos-chips { margin:0; flex-wrap:wrap; }
+.tos-section-label { font-size:10px; font-weight:700; letter-spacing:.8px; color:var(--muted); margin-bottom:3px; text-transform:uppercase; }
+/* CALL / PUT */
+.tos-callput-row { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.tos-cp-btn { padding:8px; border-radius:6px; border:2px solid var(--border); background:var(--bg); font-weight:700; font-size:13px; cursor:pointer; transition:all .15s; }
+.tos-cp-btn.active.tos-call { background:var(--green); border-color:var(--green); color:#fff; }
+.tos-cp-btn.active.tos-put  { background:var(--red);   border-color:var(--red);   color:#fff; }
+.tos-cp-btn:not(.active) { color:var(--muted); }
+/* Strike + Expiry row */
+.tos-row2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.tos-field { display:flex; flex-direction:column; }
+.tos-input { padding:7px 8px; font-size:13px; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); width:100%; }
+/* Qty */
+.tos-qty-section { display:flex; flex-direction:column; }
+.tos-qty-row { display:flex; align-items:center; gap:5px; }
+.tos-qty-step { width:28px; height:28px; border-radius:6px; border:1px solid var(--border); background:var(--hover); font-size:16px; cursor:pointer; font-weight:700; color:var(--text); flex-shrink:0; }
+.tos-qty-input { width:44px; text-align:center; padding:5px 4px; font-size:14px; font-weight:700; border:1px solid var(--border); border-radius:6px; background:var(--bg); color:var(--text); }
+.tos-qty-quick { padding:4px 8px; border-radius:6px; border:1px solid var(--border); background:var(--hover); font-size:12px; font-weight:600; cursor:pointer; color:var(--text); }
+.tos-qty-quick:hover { background:var(--blue); color:#fff; border-color:var(--blue); }
+/* TIF row */
+.tos-tif-row { display:flex; align-items:center; gap:8px; padding:5px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.tos-tif-opt { display:flex; align-items:center; gap:4px; font-size:12px; font-weight:600; cursor:pointer; }
+.tos-mid-val { font-weight:700; color:var(--text); }
+/* 4 action buttons */
+.tos-action-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:2px; }
+.tos-btn { padding:10px 6px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; line-height:1.3; transition:opacity .15s; }
+.tos-btn:hover { opacity:.88; }
+.tos-btn-price { font-size:13px; font-weight:800; }
+.tos-buy-ask  { background:#16a34a; color:#fff; }
+.tos-buy-mkt  { background:#4ade80; color:#14532d; }
+.tos-sell-bid { background:#dc2626; color:#fff; }
+.tos-sell-mkt { background:#f87171; color:#7f1d1d; }
+.tos-watch-btn { width:100%; padding:7px; border:1px dashed var(--border); border-radius:8px; background:transparent; color:var(--muted); font-size:12px; cursor:pointer; margin-top:2px; }
+.tos-watch-btn:hover { background:var(--hover); color:var(--text); }
+/* Trade rows — each independently collapsible */
+.tw-row { overflow:hidden; transition:max-height .3s ease; }
+.tw-row.collapsed { max-height:0 !important; }
+.tw-row-inner { padding:2px 0 4px; }
+/* Row 1: form (fixed width) + chain (fills rest) */
+.tw-row1-grid { display:grid; grid-template-columns:450px 1fr; gap:14px; height:48vh; }
+.tw-form-col  { min-width:0; }
+.tw-chain-col { min-width:0; }
+/* Row 2: watchlist + ladder side by side, taller */
+.tw-row2-grid { display:grid; grid-template-columns:2fr 3fr; gap:14px; height:54vh; }
+/* Collapse bar */
+.tw-collapse-bar { display:flex; align-items:center; justify-content:center; gap:8px; padding:3px 0 8px; }
+.tw-row-label { font-size:11px; color:var(--muted); }
+.trade-collapse-btn { background:none; border:1px solid var(--border); border-radius:20px; padding:3px 14px; font-size:11px; color:var(--muted); cursor:pointer; transition:background .15s; }
+.trade-collapse-btn:hover { background:var(--hover); color:var(--text); }
+/* Responsive */
+@media (max-width:900px) { .tw-row1-grid { grid-template-columns:1fr; height:auto; } .tw-row2-grid { grid-template-columns:1fr; height:auto; } .tw-row { max-height:none !important; } }
+.panel-compact { padding:12px; }
+.panel-compact h3 { font-size:15px; }
+.panel-compact .form-field { margin-bottom:6px; }
+.panel-compact .form-field label { margin-bottom:3px; font-size:11px; }
+.panel-compact .form-field input, .panel-compact .form-field select { padding:7px 10px; font-size:13px; }
+.panel-compact .seg-tabs { margin-bottom:8px; }
+/* Compact direction/type buttons */
+.panel-compact .dir-btn { padding:7px 6px; font-size:12px; }
+/* Compact quote card — single-line strip */
+.panel-compact .quote-card { padding:8px 11px; margin-bottom:8px; }
+.panel-compact .quote-row { align-items:center; }
+.panel-compact .quote-left { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.panel-compact .quote-price { font-size:18px; font-weight:800; letter-spacing:-0.5px; }
+.panel-compact .quote-change-up, .panel-compact .quote-change-down { font-size:11px; margin-top:0; }
+.panel-compact .quote-meta { display:none; }
+/* Compact toggle and buttons */
+.panel-compact .tog-row { padding:5px 0; margin-top:4px; font-size:12px; }
+.panel-compact .tog-label { font-size:12px !important; }
+.panel-compact .tog-help { font-size:10px !important; }
+.panel-compact .watchlist-btn { padding:7px; margin-top:6px; font-size:12px; }
+.panel-compact .modal-btn { padding:9px; font-size:13px; margin-top:10px; }
+/* Compact chain section */
+.panel-compact .chain-head { margin-top:4px; margin-bottom:3px; }
+.panel-compact .chain-meta { font-size:10px; margin-bottom:3px !important; }
+.panel-compact .ladder-legend { margin-bottom:2px; }
+
+/* Option watchlist */
+/* Watchlist compact table */
+.wl-table { width:100%; border-collapse:collapse; font-size:12px; }
+.wl-th { padding:4px 8px; text-align:left; font-size:10px; font-weight:700; letter-spacing:.6px; color:var(--muted); text-transform:uppercase; border-bottom:1px solid var(--border); white-space:nowrap; }
+.wl-row { cursor:pointer; border-bottom:1px solid var(--border); transition:background .1s; }
+.wl-row:hover { background:var(--hover); }
+.wl-row.wl-selected { background:rgba(79,70,229,0.08); }
+.wl-td { padding:6px 8px; white-space:nowrap; }
+.wl-td-ticker { font-weight:700; font-size:13px; }
+.wl-td-strike { font-weight:600; }
+.wl-td-exp { color:var(--muted); font-size:11px; }
+.wl-del-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:13px; padding:2px 4px; border-radius:4px; }
+.wl-del-btn:hover { color:var(--red); background:var(--red-soft); }
+/* Keep old wl-item styles for ladderView usage */
+.wl-item { border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 12px; margin-bottom:8px; background:var(--surface); }
+.wl-item-title { font-size:13px; font-weight:700; }
+.wl-item-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+.wl-item.wl-selected { border-color:var(--indigo); box-shadow:0 0 0 2px rgba(79,70,229,0.12); }
+
+/* Ladder placeholder */
+.ladder-placeholder { text-align:center; color:var(--muted); font-size:13px; padding:44px 16px; line-height:1.7; }
+
+.panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; box-shadow:var(--shadow-sm); }
+.panel-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.panel h3 { margin:0; font-size:15px; font-weight:600; letter-spacing:-0.2px; }
+.panel-sub { color:var(--muted); font-size:13px; margin-top:-4px; margin-bottom:16px; }
+.section-count { background:var(--hover); padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; color:var(--muted); }
+
+/* Top tabs */
+.tabs { display:flex; gap:4px; background:var(--surface); padding:5px; border-radius:var(--radius-sm); border:1px solid var(--border); margin-bottom:22px; width:fit-content; box-shadow:var(--shadow-sm); }
+.tab { padding:8px 18px; background:transparent; border:none; cursor:pointer; font-size:13px; font-weight:500; color:var(--muted); border-radius:var(--radius-xs); transition:all .12s ease; }
+.tab:hover { color:var(--text); }
+.tab.active { color:var(--text); background:var(--hover); font-weight:600; }
+
+/* Modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(15, 23, 42, 0.45); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:100; padding:20px; animation:fadeIn .15s ease; }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+@keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+.modal { background:var(--surface); border-radius:var(--radius); padding:30px; width:100%; max-width:420px; box-shadow:var(--shadow-lg); animation:slideUp .22s cubic-bezier(0.16, 1, 0.3, 1); }
+.modal h2 { margin:0 0 8px; font-size:22px; letter-spacing:-0.5px; font-weight:700; }
+
+.auth-tabs { display:flex; gap:4px; background:var(--hover); border-radius:var(--radius-sm); padding:4px; margin-bottom:18px; }
+.auth-tab { flex:1; padding:9px; background:transparent; border:none; border-radius:var(--radius-xs); cursor:pointer; font-size:13px; font-weight:500; color:var(--muted); }
+.auth-tab.active { background:var(--surface); color:var(--text); box-shadow:var(--shadow-sm); font-weight:600; }
+
+.form-field { margin-bottom:14px; }
+.form-field label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.3px; }
+.form-field input, .form-field select, .form-field textarea { width:100%; padding:10px 13px; border:1px solid var(--border); border-radius:var(--radius-sm); font-size:14px; font-family:inherit; background:var(--surface); color:var(--text); transition:border-color .12s, box-shadow .12s; }
+.form-field select option { background:var(--surface); color:var(--text); }
+.form-field input:focus, .form-field select:focus { outline:none; border-color:var(--indigo); box-shadow:0 0 0 3px rgba(79, 70, 229, 0.1); }
+.form-field input::placeholder { color:var(--subtle); }
+
+.modal-btn { width:100%; padding:12px; background:var(--black-btn); color:#fff; border:none; border-radius:var(--radius-sm); font-size:14px; font-weight:600; cursor:pointer; margin-top:6px; transition:all .15s; letter-spacing:0.1px; }
+.modal-btn:hover { background:#1e293b; }
+.modal-btn:disabled { opacity:0.5; cursor:not-allowed; }
+.modal-error { color:var(--red); font-size:13px; margin-top:8px; min-height:18px; }
+
+/* Splash */
+#loggedOutSplash { display:none; flex-direction:column; align-items:center; justify-content:center; min-height:85vh; text-align:center; padding:20px; }
+.splash-logo { font-size:48px; font-weight:800; letter-spacing:-2px; margin-bottom:10px; background:linear-gradient(135deg, var(--indigo), var(--blue)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.splash-tagline { color:var(--muted); font-size:15px; margin-bottom:28px; max-width:480px; line-height:1.6; }
+
+/* Trader card */
+.trader-card { display:flex; align-items:flex-start; gap:14px; padding:16px; border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:10px; background:var(--surface); transition:all .15s; }
+.trader-card:hover { border-color:var(--subtle); box-shadow:var(--shadow-sm); transform:translateY(-1px); }
+.avatar { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; font-size:15px; flex-shrink:0; letter-spacing:-0.3px; }
+.avatar-0 { background:linear-gradient(135deg, #6366f1, #4f46e5); }
+.avatar-1 { background:linear-gradient(135deg, #10b981, #059669); }
+.avatar-2 { background:linear-gradient(135deg, #f59e0b, #d97706); }
+.avatar-3 { background:linear-gradient(135deg, #ec4899, #db2777); }
+.avatar-4 { background:linear-gradient(135deg, #3b82f6, #2563eb); }
+.trader-name { font-weight:600; font-size:14px; }
+.trader-style { font-size:12px; color:var(--muted); margin-top:1px; }
+.trader-stats { font-size:11px; color:var(--subtle); margin-top:3px; display:flex; gap:10px; }
+.verified { color:var(--blue); font-size:13px; margin-left:3px; }
+
+/* Multiplier pills */
+.mult-row { display:flex; gap:6px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--border); }
+.mult-pill { padding:4px 10px; border-radius:20px; border:1.5px solid var(--border); background:transparent; color:var(--muted); font-size:11px; font-weight:500; cursor:pointer; transition:all .12s; }
+.mult-pill:hover { border-color:var(--subtle); color:var(--text); }
+.mult-pill.active { background:var(--text); color:#fff; border-color:var(--text); font-weight:700; }
+
+/* Order/Signal rows */
+.list-row { padding:13px 15px; border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:9px; background:var(--surface); transition:border-color .12s; }
+.list-row:hover { border-color:var(--subtle); }
+.row-head { display:flex; justify-content:space-between; align-items:center; }
+.ticker-badge { font-weight:700; font-size:15px; letter-spacing:-0.3px; }
+.side-buy { color:var(--green); font-weight:600; }
+.side-sell { color:var(--red); font-weight:600; }
+
+.exec-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+.exec-badge.auto { background:var(--green-soft); color:var(--green); }
+.exec-badge.confirm { background:var(--amber-soft); color:var(--amber); }
+.exec-badge.manual { background:var(--blue-soft); color:var(--blue); }
+
+.status-pill { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+.status-submitted { background:var(--green-soft); color:var(--green); }
+.status-filled { background:var(--green-soft); color:var(--green); }
+.status-rejected { background:var(--red-soft); color:var(--red); }
+.status-queued { background:var(--amber-soft); color:var(--amber); }
+.status-cancelled { background:var(--hover); color:var(--muted); }
+
+/* Execution result panel (for signal rows on publisher side) */
+.exec-result { margin-top:10px; padding:10px 12px; border-radius:var(--radius-sm); font-size:12px; line-height:1.6; }
+.exec-result.ok { background:var(--green-soft); border:1px solid #bbf7d0; color:#14532d; }
+.exec-result.error { background:var(--red-soft); border:1px solid #fecaca; color:#7f1d1d; }
+.exec-result .er-row { display:flex; justify-content:space-between; align-items:center; }
+.exec-result .er-detail { margin-top:4px; font-size:11px; opacity:0.85; word-break:break-word; }
+
+/* Multiplier badge inline */
+.mult-badge { background:var(--hover); border-radius:5px; padding:2px 7px; font-size:11px; font-weight:700; color:var(--muted); margin-left:4px; }
+
+/* Direction toggle */
+.dir-toggle { display:flex; gap:6px; }
+.dir-btn { flex:1; padding:11px; border:1.5px solid var(--border); background:var(--surface); border-radius:var(--radius-sm); cursor:pointer; font-weight:600; font-size:13px; transition:all .12s; color:var(--text); }
+.dir-btn:hover { border-color:var(--subtle); }
+.dir-btn.active.buy { background:var(--green); color:#fff; border-color:var(--green); box-shadow:0 4px 10px rgba(22, 163, 74, 0.2); }
+.dir-btn.active.sell { background:var(--red); color:#fff; border-color:var(--red); box-shadow:0 4px 10px rgba(220, 38, 38, 0.2); }
+
+/* Seg tabs (Options/Equity) */
+.seg-tabs { display:flex; background:var(--hover); border-radius:var(--radius-sm); padding:4px; margin-bottom:16px; }
+.seg-tab { flex:1; padding:9px; background:transparent; border:none; border-radius:var(--radius-xs); cursor:pointer; font-size:13px; font-weight:500; color:var(--muted); }
+.seg-tab.active { background:var(--surface); color:var(--text); box-shadow:var(--shadow-sm); font-weight:600; }
+
+.form-row { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+
+/* Toggle switch */
+.toggle-switch { display:inline-flex; align-items:center; gap:8px; cursor:pointer; }
+.toggle-switch input { display:none; }
+.toggle-switch .slider { width:38px; height:22px; background:var(--border); border-radius:22px; position:relative; transition:background .15s; }
+.toggle-switch .slider::after { content:''; position:absolute; top:2px; left:2px; width:18px; height:18px; background:var(--surface); border-radius:50%; transition:transform .15s; box-shadow:0 1px 3px rgba(0,0,0,0.15); }
+.toggle-switch input:checked + .slider { background:var(--green); }
+.toggle-switch input:checked + .slider::after { transform:translateX(16px); }
+.tog-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid var(--border); margin-top:10px; }
+.tog-row label.tog-label { margin:0; text-transform:none; letter-spacing:0; font-size:13px; font-weight:500; color:var(--text); }
+.tog-help { font-size:11px; color:var(--muted); margin-top:2px; }
+
+/* Quote card */
+.quote-card { background:linear-gradient(135deg, #ffffff, #f5f3ff); border:1px solid #e0e7ff; border-radius:var(--radius-sm); padding:16px; margin-bottom:16px; position:relative; overflow:hidden; }
+.quote-card::before { content:''; position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:radial-gradient(circle, rgba(79, 70, 229, 0.08), transparent 70%); }
+.quote-row { display:flex; justify-content:space-between; align-items:flex-end; position:relative; }
+.quote-left .qname { font-size:11px; color:var(--muted); margin-bottom:2px; font-weight:500; }
+.quote-price { font-size:28px; font-weight:800; letter-spacing:-1px; line-height:1.1; }
+.quote-change-up { color:var(--green); font-size:13px; font-weight:600; margin-top:2px; }
+.quote-change-down { color:var(--red); font-size:13px; font-weight:600; margin-top:2px; }
+.quote-right { text-align:right; }
+.quote-mini { font-size:11px; color:var(--muted); margin-top:2px; }
+.quote-action { display:block; margin-top:4px; background:transparent; border:none; color:var(--indigo); font-size:11px; font-weight:600; cursor:pointer; padding:2px 0; }
+.quote-action:hover { text-decoration:underline; }
+.quote-meta { display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(0,0,0,0.05); font-size:11px; }
+.quote-meta div { color:var(--muted); }
+.quote-meta strong { color:var(--text); display:block; font-size:12px; font-weight:600; }
+
+/* Toast */
+.toast { position:fixed; bottom:24px; right:24px; background:var(--text); color:#fff; padding:13px 20px; border-radius:var(--radius-sm); font-size:13px; font-weight:500; box-shadow:var(--shadow-lg); z-index:1000; animation:slideUp .25s ease; }
+
+/* Confirm modal (publish) - polished */
+.confirm-modal { max-width:480px; padding:0; overflow:hidden; }
+.confirm-hero { padding:24px 28px 20px; position:relative; }
+.confirm-hero.buy { background:linear-gradient(135deg, #f0fdf4, #ffffff); border-bottom:1px solid #bbf7d0; }
+.confirm-hero.sell { background:linear-gradient(135deg, #fef2f2, #ffffff); border-bottom:1px solid #fecaca; }
+.confirm-pill { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+.confirm-pill.buy { background:var(--green); color:#fff; }
+.confirm-pill.sell { background:var(--red); color:#fff; }
+.confirm-ticker { font-size:32px; font-weight:800; letter-spacing:-1.2px; margin-top:8px; }
+.confirm-sub { font-size:13px; color:var(--muted); margin-top:4px; }
+.confirm-body { padding:18px 28px 24px; }
+.confirm-row { display:flex; justify-content:space-between; padding:8px 0; font-size:13px; border-bottom:1px solid var(--border); }
+.confirm-row:last-child { border-bottom:none; }
+.confirm-row .label { color:var(--muted); }
+.confirm-row .value { font-weight:600; }
+.confirm-be { background:var(--blue-soft); border:1px solid #bfdbfe; border-radius:var(--radius-sm); padding:10px 12px; margin-top:12px; font-size:12px; color:var(--blue); font-weight:500; }
+.confirm-ext { background:var(--amber-soft); border:1px solid #fde68a; border-radius:var(--radius-sm); padding:10px 12px; margin-top:10px; font-size:12px; color:var(--amber); font-weight:600; }
+.confirm-actions { padding:0 28px 24px; display:flex; gap:10px; flex-direction:column; }
+.confirm-btn-primary { padding:13px; border:none; border-radius:var(--radius-sm); font-size:14px; font-weight:700; cursor:pointer; transition:transform .1s; letter-spacing:0.2px; }
+.confirm-btn-primary:hover { transform:translateY(-1px); }
+.confirm-btn-primary.buy { background:var(--green); color:#fff; box-shadow:0 6px 14px rgba(22, 163, 74, 0.25); }
+.confirm-btn-primary.sell { background:var(--red); color:#fff; box-shadow:0 6px 14px rgba(220, 38, 38, 0.25); }
+.confirm-cancel { padding:10px; border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-sm); font-size:13px; font-weight:500; color:var(--muted); cursor:pointer; }
+.confirm-cancel:hover { color:var(--text); border-color:var(--subtle); }
+
+/* Analytics */
+.stat-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:14px; margin-bottom:18px; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; transition:all .15s; }
+.stat-card:hover { border-color:var(--subtle); transform:translateY(-1px); box-shadow:var(--shadow-sm); }
+.stat-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.4px; font-weight:600; }
+.stat-value { font-size:26px; font-weight:800; margin-top:4px; letter-spacing:-0.8px; }
+.stat-trend { font-size:11px; color:var(--green); font-weight:600; margin-top:2px; }
+
+/* Broker banner */
+.broker-banner { background:var(--amber-soft); color:#92400e; padding:10px 16px; text-align:center; font-size:13px; font-weight:500; border-bottom:1px solid #fde68a; }
+.broker-banner a { color:#92400e; font-weight:700; text-decoration:underline; cursor:pointer; }
+
+/* Follower row */
+.follower-row { display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid var(--border); }
+.follower-row:last-child { border-bottom:none; }
+
+/* Empty state */
+.empty { color:var(--muted); font-size:13px; padding:20px; text-align:center; background:var(--hover); border-radius:var(--radius-sm); }
+
+/* Pulse animation for live indicator */
+.live-dot { display:inline-block; width:6px; height:6px; background:var(--green); border-radius:50%; margin-right:6px; animation:pulse 1.8s ease infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+
+/* Options ladder */
+.chain-head { display:flex; align-items:center; justify-content:space-between; margin-top:6px; margin-bottom:6px; }
+.chain-title { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; color:var(--muted); }
+.chain-meta { font-size:11px; color:var(--subtle); }
+.ladder-legend { display:flex; justify-content:space-between; font-size:10px; font-weight:600; color:var(--subtle); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px; }
+.ladder-scroll { max-height:220px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius-sm); }
+.chain-toggle-btn { background:none; border:none; color:var(--muted); font-size:11px; cursor:pointer; padding:0; }
+.chain-toggle-btn:hover { color:var(--text); }
+table.ladder { width:100%; border-collapse:collapse; font-size:11px; }
+table.ladder th { position:sticky; top:0; background:var(--hover); color:var(--muted); font-weight:600; padding:5px 4px; font-size:9px; text-transform:uppercase; letter-spacing:0.3px; z-index:1; }
+table.ladder td { padding:5px 4px; text-align:center; border-top:1px solid var(--border); }
+.ladder-call, .ladder-put { cursor:pointer; transition:background .1s; }
+.ladder-call:hover { background:var(--green-soft); }
+.ladder-put:hover { background:var(--red-soft); }
+.ladder-strike { font-weight:700; background:var(--hover); color:var(--text); font-size:11px; }
+.ladder-row.atm .ladder-strike { background:var(--blue); color:#fff; }
+.ladder-row.atm td { border-top:1.5px solid var(--blue); }
+.ladder-row.selected td { background:rgba(79, 70, 229, 0.22) !important; }
+.ladder-row.selected .ladder-strike { background:var(--indigo); color:#fff; }
+.ladder-row { cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:rgba(79,70,229,0.15); }
+/* Inline trade bar that appears below a clicked ladder row */
+.ladder-trade-bar { display:none; }
+.ladder-row.trade-open + tr.ladder-trade-bar,
+tr.ladder-trade-bar.visible { display:table-row; }
+tr.ladder-trade-bar td { padding:6px 8px; background:var(--surface); border-bottom:2px solid var(--blue); }
+.ltr-inner { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.ltr-label { font-size:11px; font-weight:700; color:var(--muted); white-space:nowrap; }
+.ltr-price { font-size:13px; font-weight:700; color:var(--text); }
+.ltr-btn { padding:5px 14px; border-radius:6px; border:none; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+.ltr-btn-buy  { background:var(--green); color:#fff; }
+.ltr-btn-sell { background:var(--red);   color:#fff; }
+.ltr-btn-wl   { background:transparent; border:1px dashed var(--border); color:var(--muted); }
+.ltr-close    { margin-left:auto; background:none; border:none; cursor:pointer; color:var(--muted); font-size:16px; line-height:1; padding:2px 6px; }
+.ladder-itm-c { background:rgba(22,163,74,0.06); }
+.ladder-itm-p { background:rgba(220,38,38,0.06); }
+.ladder-px { font-weight:600; }
+.ladder-dim { color:var(--subtle); }
+
+/* Ladder mode pill + side dimming */
+.ladder-mode { padding:3px 11px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:0.4px; }
+.ladder-mode.buy-call { background:var(--green-soft); color:var(--green); }
+.ladder-mode.sell-call { background:var(--amber-soft); color:var(--amber); }
+.ladder-mode.buy-put  { background:var(--amber-soft); color:var(--amber); }
+.ladder-mode.sell-put { background:var(--red-soft); color:var(--red); }
+table.ladder.side-call .ladder-put { opacity:0.32; filter:grayscale(0.7); }
+table.ladder.side-put  .ladder-call { opacity:0.32; filter:grayscale(0.7); }
+.ladder-legend span.leg-dim { opacity:0.3; }
+.ladder-legend span.leg-on { text-decoration:underline; font-weight:800; }
+
+/* Depth of Market ladder */
+#domPanel { margin-top:16px; }
+.dom-scroll { max-height:420px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius-sm); }
+table.dom-table { width:100%; border-collapse:collapse; font-size:12px; }
+table.dom-table td { padding:6px 12px; border-top:1px solid var(--border); }
+table.dom-table tr:first-child td { border-top:none; }
+.dom-ask td { background:var(--red-soft); }
+.dom-bid td { background:var(--green-soft); }
+.dom-price { font-weight:700; font-variant-numeric:tabular-nums; }
+.dom-ask .dom-price { color:var(--red); }
+.dom-bid .dom-price { color:var(--green); }
+.dom-size { text-align:right; font-variant-numeric:tabular-nums; color:var(--text); font-weight:600; }
+.dom-bar-cell { width:42%; }
+.dom-bar { height:14px; border-radius:3px; }
+.dom-ask .dom-bar { background:rgba(220,38,38,0.35); margin-left:auto; }
+.dom-bid .dom-bar { background:rgba(22,163,74,0.35); }
+.dom-spread { text-align:center; font-size:10px; font-weight:600; color:var(--subtle); padding:5px; background:var(--hover); text-transform:uppercase; letter-spacing:0.6px; }
+.dom-foot { font-size:10px; color:var(--subtle); text-align:center; margin-top:6px; }
+
+/* Watchlist */
+.watchlist-btn { width:100%; margin-top:10px; padding:10px; background:var(--surface); border:1.5px dashed var(--border); border-radius:var(--radius-sm); font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; transition:all .12s; }
+.watchlist-btn:hover { border-color:var(--amber); color:var(--amber); background:var(--amber-soft); }
+.watch-chip { position:relative; }
+.watch-chip .wc-x { margin-left:5px; opacity:0.5; font-weight:700; }
+.watch-chip .wc-x:hover { opacity:1; color:var(--red); }
+
+/* Broker picker */
+.broker-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; max-height:380px; overflow-y:auto; padding:2px; }
+.broker-tile { display:flex; align-items:center; gap:10px; padding:12px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); cursor:pointer; transition:all .15s; text-align:left; font-family:inherit; }
+.broker-tile:hover { border-color:var(--indigo); box-shadow:0 4px 10px rgba(79, 70, 229, 0.08); transform:translateY(-1px); }
+.broker-logo { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; font-size:13px; flex-shrink:0; letter-spacing:-0.3px; }
+.broker-tile-name { font-size:13px; font-weight:600; }
+.broker-tile-sub { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.4px; }
+/* Quick-pick ticker chips */
+.ticker-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.ticker-chip { padding:6px 12px; border:1px solid var(--border); background:var(--surface); border-radius:14px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .12s; color:var(--text); }
+.ticker-chip:hover { border-color:var(--indigo); color:var(--indigo); }
+.ticker-chip.active { background:var(--text); border-color:var(--text); color:var(--bg); }
+
+/* Copy-trade button */
+.copy-trade-btn { padding:4px 9px; font-size:11px; font-weight:600; border:1px solid var(--border); background:var(--surface); color:var(--muted); border-radius:6px; cursor:pointer; font-family:inherit; transition:all .15s; }
+.copy-trade-btn:hover { border-color:var(--indigo); color:var(--indigo); background:#eef2ff; }
+
+/* Signal filters */
+.signal-filters { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 16px; }
+.signal-filters select, .signal-filters input { padding:7px 11px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text); font-size:13px; font-family:inherit; }
+.filter-clear { padding:7px 14px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .12s; }
+.filter-clear:hover { border-color:var(--indigo); color:var(--indigo); }
+
+/* Trade lifecycle strip */
+.trade-life { display:flex; gap:20px; margin-top:9px; padding-top:9px; border-top:1px solid var(--border); flex-wrap:wrap; }
+.trade-life > div { display:flex; flex-direction:column; gap:2px; }
+.tl-label { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+.tl-val { font-size:12px; font-weight:600; color:var(--text); }
+.trade-status { font-size:11px; font-weight:700; padding:1px 8px; border-radius:10px; width:fit-content; }
+.trade-status.open { background:var(--blue-soft); color:var(--blue); }
+.trade-status.closed { background:var(--hover); color:var(--muted); }
+.trade-status.pending { background:#fef9c3; color:#854d0e; }
+
+/* Open positions table */
+.positions-table { width:100%; border-collapse:collapse; font-size:12px; }
+.positions-table th { font-size:10px; text-transform:uppercase; letter-spacing:0.5px; font-weight:700; color:var(--muted); padding:6px 10px; border-bottom:2px solid var(--border); text-align:left; white-space:nowrap; }
+.positions-table td { padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.positions-table tr:last-child td { border-bottom:none; }
+.positions-table tbody tr:hover { background:var(--hover); }
+/* Subscriber open positions cards */
+.pos-card { border:1px solid var(--border); border-radius:var(--radius-sm); margin-bottom:10px; overflow:hidden; background:var(--surface); }
+.pos-card:last-child { margin-bottom:0; }
+.pos-primary { display:grid; grid-template-columns:1.6fr 0.7fr 1.2fr 1.1fr 1fr 1fr; gap:0; }
+.pos-cell { padding:10px 12px; border-right:1px solid var(--border); }
+.pos-cell:last-child { border-right:none; }
+.pos-cell-label { font-size:9px; text-transform:uppercase; letter-spacing:0.5px; font-weight:700; color:var(--muted); margin-bottom:3px; }
+.pos-cell-val { font-size:13px; font-weight:600; color:var(--text); }
+.pos-secondary { display:flex; gap:18px; padding:7px 12px; background:var(--hover); border-top:1px solid var(--border); font-size:11px; color:var(--muted); flex-wrap:wrap; align-items:center; }
+.pos-secondary strong { color:var(--text); }
+.pos-actions { display:flex; align-items:center; gap:8px; padding:8px 12px; border-top:1px solid var(--border); }
+.pos-order-sel { padding:5px 8px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:12px; cursor:pointer; }
+.pos-limit-input { padding:5px 8px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:12px; width:90px; display:none; }
+.pos-exit-btn { margin-left:auto; padding:6px 16px; border-radius:7px; border:none; background:var(--red); color:#fff; font-weight:700; font-size:12px; cursor:pointer; }
+.pos-exit-btn:hover { opacity:.85; }
+.pos-exit-btn:disabled { opacity:.5; cursor:not-allowed; }
+.exit-all-btn { margin-left:auto; padding:5px 14px; border-radius:20px; border:1.5px solid var(--red); background:transparent; color:var(--red); font-size:12px; font-weight:700; cursor:pointer; transition:all .15s; }
+.exit-all-btn:hover { background:var(--red); color:#fff; }
+.exit-all-btn:disabled { opacity:.5; cursor:not-allowed; }
+.pos-filter-row { display:flex; gap:6px; margin-bottom:12px; }
+.pos-filter-btn { padding:4px 12px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); color:var(--muted); font-size:12px; font-weight:600; cursor:pointer; }
+.pos-filter-btn.active { background:var(--blue); color:#fff; border-color:var(--blue); }
+.opt-badge { font-size:11px; font-weight:700; padding:1px 7px; border-radius:8px; }
+.opt-badge.call { background:var(--green-soft); color:var(--green); }
+.opt-badge.put { background:var(--red-soft); color:var(--red); }
+/* Ladder buy form */
+.ladder-buy { margin-top:0; padding:12px 14px; background:var(--hover); border-radius:var(--radius-sm); border:1px solid var(--border); }
+.ladder-buy h4 { margin:0 0 10px; font-size:13px; font-weight:700; }
+.lb-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:8px; }
+.lb-field { display:flex; flex-direction:column; gap:3px; }
+.lb-field label { font-size:10px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+.lb-field input, .lb-field select { padding:6px 8px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:12px; width:100%; box-sizing:border-box; }
+.lb-limit-wrap { margin-bottom:8px; }
+.lb-limit-wrap .lb-field input { width:100%; }
+.ladder-buy-submit { width:100%; padding:9px; border-radius:8px; border:none; background:var(--blue); color:#fff; font-weight:700; font-size:13px; cursor:pointer; margin-top:4px; }
+.ladder-buy-submit:hover { opacity:.88; }
+/* DOM / Depth-of-Market ladder */
+.dom-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; margin-bottom:14px; }
+.dom-header { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:6px 10px; border-bottom:2px solid var(--border); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+.dom-label-bid { color:var(--green); }
+.dom-label-mid { text-align:center; color:var(--muted); font-size:9px; }
+.dom-label-ask { color:#fb923c; text-align:right; }
+.dom-scroll { max-height:420px; overflow-y:auto; }
+.dom-row { display:grid; grid-template-columns:1fr 72px 1fr; align-items:center; height:26px; }
+.dom-row:hover { background:var(--hover); cursor:pointer; }
+.dom-bid-cell { display:flex; align-items:center; justify-content:flex-end; gap:4px; padding-right:2px; height:100%; }
+.dom-ask-cell { display:flex; align-items:center; justify-content:flex-start; gap:4px; padding-left:2px; height:100%; }
+.dom-price-cell { text-align:center; font-size:11px; font-weight:600; color:var(--text); }
+.dom-bid-bar { height:20px; background:rgba(34,197,94,.5); border-radius:3px; flex-shrink:0; }
+.dom-ask-bar { height:20px; background:rgba(251,146,60,.5); border-radius:3px; flex-shrink:0; }
+.dom-qty { font-size:10px; color:var(--muted); min-width:26px; text-align:right; flex-shrink:0; }
+.dom-qty-ask { text-align:left; }
+.dom-best-bid .dom-bid-bar { background:rgba(34,197,94,.85); }
+.dom-best-bid .dom-price-cell { color:var(--green); font-weight:800; }
+.dom-best-ask .dom-ask-bar { background:rgba(251,146,60,.85); }
+.dom-best-ask .dom-price-cell { color:#fb923c; font-weight:800; }
+.dom-mid-row { text-align:center; padding:3px 0; font-size:10px; font-weight:700; color:var(--muted); background:var(--hover); border-top:1px dashed var(--border); border-bottom:1px dashed var(--border); letter-spacing:0.3px; }
+.dom-spread-row { text-align:center; padding:2px 0; font-size:9px; color:var(--muted); background:var(--hover); }
+.dom-action-row { display:flex; gap:8px; padding:8px 10px; border-top:1px solid var(--border); }
+.dom-buy-btn { flex:1; padding:7px; border-radius:7px; border:none; background:var(--green); color:#fff; font-weight:700; font-size:12px; cursor:pointer; }
+.dom-sell-btn { flex:1; padding:7px; border-radius:7px; border:none; background:#fb923c; color:#fff; font-weight:700; font-size:12px; cursor:pointer; }
+.dom-buy-btn:hover { opacity:.85; } .dom-sell-btn:hover { opacity:.85; }
+.dom-refresh-btn { font-size:10px; color:var(--muted); cursor:pointer; background:none; border:1px solid var(--border); padding:2px 8px; border-radius:4px; }
+.dom-refresh-btn:hover { color:var(--text); }
+
+/* P&L Calendar */
+.cal-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; flex-wrap:wrap; gap:10px; }
+.cal-nav { display:flex; align-items:center; gap:8px; }
+.cal-nav button { width:30px; height:30px; border:1px solid var(--border); background:var(--surface); border-radius:6px; cursor:pointer; font-size:15px; color:var(--text); font-family:inherit; transition:all .12s; }
+.cal-nav button:hover { border-color:var(--indigo); color:var(--indigo); }
+.cal-month { font-weight:700; font-size:15px; min-width:140px; text-align:center; }
+.cal-total { font-size:13px; color:var(--muted); margin-bottom:14px; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+.cal-weekday { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; text-align:center; padding-bottom:2px; }
+.cal-cell { min-height:78px; border:1px solid var(--border); border-radius:8px; padding:7px; display:flex; flex-direction:column; }
+.cal-cell.empty { border:none; background:transparent; }
+.cal-cell.cal-win { background:var(--green-soft); border-color:var(--green); }
+.cal-cell.cal-loss { background:var(--red-soft); border-color:var(--red); }
+.cal-date { font-size:12px; color:var(--muted); font-weight:600; }
+.cal-pnl { font-size:13px; font-weight:700; margin-top:auto; }
+.cal-pnl.cal-pos { color:#16a34a; }
+.cal-pnl.cal-neg { color:#dc2626; }
+.cal-trades { font-size:10px; color:var(--muted); margin-top:1px; }
+.cal-tot-pos { color:#16a34a; font-weight:700; }
+.cal-tot-neg { color:#dc2626; font-weight:700; }
+
+.broker-tile.readonly { opacity:0.55; }
+.broker-tile.readonly:hover { border-color:var(--border); box-shadow:none; transform:none; cursor:not-allowed; }
+.broker-tile.readonly .broker-tile-sub { color:#dc2626; }
+
+/* Account ribbon (shown when broker is connected, below topbar) */
+.account-ribbon { display:none; background:var(--surface); border-bottom:1px solid var(--border); padding:10px 24px; gap:0; align-items:center; }
+.account-ribbon.visible { display:flex; }
+.account-ribbon.collapsed { padding-top:6px; padding-bottom:6px; }
+.ribbon-stats { flex:1; display:flex; align-items:stretch; min-width:0; }
+.account-ribbon.collapsed .ribbon-stats { display:none; }
+.ribbon-collapsed-label { display:none; font-size:12px; font-weight:600; color:var(--muted); }
+.account-ribbon.collapsed .ribbon-collapsed-label { display:block; flex:1; }
+.ribbon-collapse { width:28px; height:28px; flex-shrink:0; margin-left:12px; border:1px solid var(--border); background:var(--surface); border-radius:6px; cursor:pointer; color:var(--muted); font-size:12px; transition:all .12s; }
+.ribbon-collapse:hover { border-color:var(--indigo); color:var(--indigo); }
+.ribbon-stat { flex:1; display:flex; flex-direction:column; gap:2px; padding:4px 16px; border-right:1px solid var(--border); min-width:0; }
+.ribbon-stat:last-child { border-right:none; }
+.ribbon-stat-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
+.ribbon-stat-value { font-size:17px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; }
+.ribbon-stat-value.positive { color:#16a34a; }
+.ribbon-stat-value.negative { color:#dc2626; }
+.ribbon-stat-sub { font-size:11px; color:var(--muted); }
+
+/* Connected broker tile */
+.connected-broker-tile { display:flex; align-items:center; gap:12px; padding:14px; border:1.5px solid var(--green); background:#f0fdf4; border-radius:var(--radius-sm); }
+.connected-broker-tile .broker-logo { width:40px; height:40px; }
+.connected-broker-tile .status-dot { width:8px; height:8px; background:var(--green); border-radius:50%; animation:pulse 1.8s ease infinite; }
+.disconnect-btn { padding:6px 12px; font-size:12px; font-weight:600; border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-sm); cursor:pointer; color:#dc2626; font-family:inherit; transition:all .15s; }
+.disconnect-btn:hover { background:#fef2f2; border-color:#dc2626; }
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="brand"><span class="brand-dot"></span>SignalBoxx</div>
+  <div class="topbar-right">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light / dark">🌙</button>
+    <button id="brokerPill" class="broker-pill" onclick="openBrokerModal()" style="display:none">
+      <span class="broker-dot" id="brokerDot"></span>
+      <span id="brokerPillText">Broker</span>
+    </button>
+    <span id="roleBadge"></span>
+    <button id="roleSwitchBtn" class="btn-ghost" onclick="toggleRole()"></button>
+    <div id="userPill">
+      <span id="userPillName"></span>
+      <span class="pill-out" onclick="logout()">Sign out</span>
+    </div>
+  </div>
+</div>
+
+<!-- Account ribbon (shown when broker connected) -->
+<div id="accountRibbon" class="account-ribbon">
+  <span class="ribbon-collapsed-label">Account summary</span>
+  <div class="ribbon-stats" id="ribbonStats">
+    <div class="ribbon-stat">
+      <div class="ribbon-stat-label">Total Balance</div>
+      <div class="ribbon-stat-value" id="ribbonBalance">—</div>
+      <div class="ribbon-stat-sub" id="ribbonBroker">—</div>
+    </div>
+    <div class="ribbon-stat">
+      <div class="ribbon-stat-label">P&L Today</div>
+      <div class="ribbon-stat-value" id="ribbonPnl">—</div>
+      <div class="ribbon-stat-sub">Realized today</div>
+    </div>
+    <div class="ribbon-stat">
+      <div class="ribbon-stat-label">P&L %</div>
+      <div class="ribbon-stat-value" id="ribbonPnlPct">—</div>
+      <div class="ribbon-stat-sub">vs balance</div>
+    </div>
+    <div class="ribbon-stat">
+      <div class="ribbon-stat-label">Open Positions</div>
+      <div class="ribbon-stat-value" id="ribbonPositions">—</div>
+      <div class="ribbon-stat-sub">Active tickers</div>
+    </div>
+    <div class="ribbon-stat">
+      <div class="ribbon-stat-label">Followers</div>
+      <div class="ribbon-stat-value" id="ribbonFollowers">—</div>
+      <div class="ribbon-stat-sub">Copying trades</div>
+    </div>
+  </div>
+  <button class="ribbon-collapse" id="ribbonCollapse" onclick="toggleRibbon()" title="Collapse / expand">▾</button>
+</div>
+
+<!-- Broker connection banner -->
+<div id="brokerBanner" class="broker-banner hidden">
+  ⚠️ No broker connected — <a onclick="openBrokerModal()">connect a broker</a> to start copy-trading.
+</div>
+
+<!-- Logged-out splash -->
+<div id="loggedOutSplash">
+  <div class="splash-logo">SignalBoxx</div>
+  <p class="splash-tagline">Copy trade options and equities from top traders. Real-time signals, automatic execution, full control over your risk.</p>
+  <button class="modal-btn" style="width:220px" onclick="showLoginModal()">Get started</button>
+  <div style="font-size:13px;color:var(--muted);margin-top:12px">Already have an account? <a onclick="setAuthMode(false);showLoginModal()" style="color:var(--text);font-weight:500;cursor:pointer">Sign in</a></div>
+</div>
+
+<!-- Login modal -->
+<div class="modal-overlay hidden" id="loginModal">
+  <div class="modal">
+    <h2>Welcome back</h2>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 18px">Sign in to continue to SignalBoxx.</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabSignIn" onclick="setAuthMode(false)">Sign in</button>
+      <button class="auth-tab" id="tabCreate" onclick="setAuthMode(true)">Create account</button>
+    </div>
+    <div class="form-field" id="usernameField" style="display:none">
+      <label>Username</label>
+      <input type="text" id="usernameInput" placeholder="trader_jane" autocomplete="username" />
+    </div>
+    <div class="form-field">
+      <label>Email</label>
+      <input type="email" id="emailInput" placeholder="you@email.com" autocomplete="email" />
+    </div>
+    <div class="form-field">
+      <label>Password</label>
+      <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <div id="forgotLink" style="text-align:right;margin:-6px 0 4px">
+      <a href="#" onclick="showForgotModal();return false" style="font-size:12px;color:var(--muted);text-decoration:none">Forgot password?</a>
+    </div>
+    <button class="modal-btn" id="authBtn" onclick="handleAuth()">Sign in</button>
+    <div class="modal-error" id="authError"></div>
+  </div>
+</div>
+
+<!-- Forgot password modal -->
+<div class="modal-overlay hidden" id="forgotModal">
+  <div class="modal">
+    <h2>Reset password</h2>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 18px">Enter your email and we'll send a reset link.</p>
+    <div class="form-field">
+      <label>Email</label>
+      <input type="email" id="forgotEmailInput" placeholder="you@email.com" />
+    </div>
+    <button class="modal-btn" onclick="handleForgotPassword()">Send reset link</button>
+    <div class="modal-error" id="forgotError" style="margin-top:10px"></div>
+    <div style="text-align:center;margin-top:14px">
+      <a href="#" onclick="closeForgotModal();return false" style="font-size:13px;color:var(--muted)">← Back to sign in</a>
+    </div>
+  </div>
+</div>
+
+<!-- Reset password modal -->
+<div class="modal-overlay hidden" id="resetModal">
+  <div class="modal">
+    <h2>Choose new password</h2>
+    <p style="font-size:13px;color:var(--muted);margin:0 0 18px">Enter a new password for your account.</p>
+    <div class="form-field"><label>New password</label><input type="password" id="resetPasswordInput" placeholder="Min 8 characters" /></div>
+    <div class="form-field"><label>Confirm password</label><input type="password" id="resetConfirmInput" placeholder="Repeat password" /></div>
+    <button class="modal-btn" onclick="handleResetPassword()">Reset password</button>
+    <div class="modal-error" id="resetError" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- Broker modal -->
+<div class="modal-overlay hidden" id="brokerModal">
+  <div class="modal" style="max-width:480px">
+    <h2 id="brokerModalTitle">Connect your broker</h2>
+
+    <!-- Connected brokers section (hidden if none) -->
+    <div id="connectedBrokersSection" style="display:none;margin-bottom:18px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px">Connected</div>
+      <div id="connectedBrokersList"></div>
+    </div>
+
+    <!-- Available brokers grid -->
+    <div id="availableBrokersSection">
+      <div id="availableBrokersLabel" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px;display:none">Connect another</div>
+      <p id="brokerModalIntro" style="font-size:13px;color:var(--muted);margin:0 0 14px">Pick your brokerage. We only show equity &amp; options brokers — no crypto-only.</p>
+      <div class="broker-grid" id="brokerGrid"></div>
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:14px">Don't see your broker? <a href="#" onclick="connectSnapTrade(null);return false" style="color:var(--blue)">Show full list →</a></p>
+    </div>
+
+    <button class="btn-link" onclick="closeBrokerModal()" style="display:block;margin:10px auto 0">Close</button>
+  </div>
+</div>
+
+<!-- Confirm publish modal (polished) -->
+<div class="modal-overlay hidden" id="confirmModal">
+  <div class="modal confirm-modal">
+    <div id="confirmHero" class="confirm-hero buy">
+      <span id="confirmPill" class="confirm-pill buy">BUY</span>
+      <div id="confirmTicker" class="confirm-ticker">AAPL</div>
+      <div id="confirmSub" class="confirm-sub">Options · CALL · 1 contract</div>
+    </div>
+    <div class="confirm-body" id="confirmBody"></div>
+    <div class="confirm-actions">
+      <button class="confirm-btn-primary buy" id="confirmBtn" onclick="confirmPublish()">Confirm &amp; Publish</button>
+      <button class="confirm-cancel" onclick="closeConfirmModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- App body -->
+<main id="appMain" class="hidden">
+
+<!-- SUBSCRIBER VIEW -->
+<div id="subscriberView">
+  <div class="tabs">
+    <button class="tab active" data-tab="sub-tab-1" onclick="switchSubTab('sub-tab-1')">📊 Dashboard</button>
+    <button class="tab" data-tab="sub-tab-2" onclick="switchSubTab('sub-tab-2')">📅 Calendar</button>
+  </div>
+
+  <div id="sub-tab-1" class="sub-tab">
+    <!-- Open Positions panel -->
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-head">
+        <h3>Open Positions</h3>
+        <span class="section-count" id="positionsCount">0</span>
+        <button class="exit-all-btn" id="exitAllBtn" onclick="exitAllPositions()" style="display:none">✕ Exit All</button>
+      </div>
+      <div class="pos-filter-row">
+        <button class="pos-filter-btn active" onclick="filterPositions('all',this)">All</button>
+        <button class="pos-filter-btn" onclick="filterPositions('options',this)">Options</button>
+        <button class="pos-filter-btn" onclick="filterPositions('stocks',this)">Stocks</button>
+      </div>
+      <div id="positionsList"><div class="empty">No open positions.</div></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Top traders</h3>
+          <span class="section-count" id="tradersCount">0</span>
+        </div>
+        <div class="panel-sub">Follow a trader to mirror their signals automatically.</div>
+        <div id="tradersList"></div>
+      </div>
+      <div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Recent orders</h3>
+            <span class="section-count" id="ordersCount">0</span>
+          </div>
+          <div id="ordersList"></div>
+        </div>
+        <div class="panel" style="margin-top:18px">
+          <h3>Risk settings</h3>
+          <div class="panel-sub">Hard limits on every order this account places.</div>
+          <div id="riskSettings"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sub-tab-2" class="sub-tab hidden">
+    <div class="panel">
+      <div id="subCalendar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PUBLISHER VIEW -->
+<div id="publisherView" class="hidden">
+  <div class="tabs">
+    <button class="tab active" data-tab="tr-tab-1" onclick="switchTraderTab('tr-tab-1')">📡 Publish</button>
+    <button class="tab" data-tab="tr-tab-2" onclick="switchTraderTab('tr-tab-2')">📊 Analytics</button>
+    <button class="tab" data-tab="tr-tab-3" onclick="switchTraderTab('tr-tab-3')">👥 Followers</button>
+    <button class="tab" data-tab="tr-tab-4" onclick="switchTraderTab('tr-tab-4')">📜 All signals</button>
+    <button class="tab" data-tab="tr-tab-5" onclick="switchTraderTab('tr-tab-5')">📅 Calendar</button>
+  </div>
+
+  <div id="tr-tab-1" class="tr-tab">
+
+    <!-- ROW 1: Form + Options Chain — collapsible -->
+    <div class="tw-row" id="twRow1">
+      <div class="tw-row-inner tw-row1-grid">
+
+        <!-- TOS-style order ticket -->
+        <div class="panel tos-ticket tw-form-col">
+
+          <!-- Ticker + type tabs -->
+          <div class="tos-ticker-row">
+            <div class="tos-ticker-input-wrap">
+              <input type="text" id="sigTicker" class="tos-ticker-input" placeholder="TICKER" oninput="onTickerChange()" autocomplete="off" />
+            </div>
+            <div class="seg-tabs tos-type-tabs">
+              <button class="seg-tab active" id="optTabOptions" onclick="switchFormTab('options')">OPT</button>
+              <button class="seg-tab" id="optTabEquity" onclick="switchFormTab('equity')">EQT</button>
+            </div>
+          </div>
+
+          <!-- Quick ticker chips -->
+          <div class="ticker-chips tos-chips" id="tickerChips"></div>
+
+          <!-- Quote strip -->
+          <div id="quoteCard"></div>
+
+          <!-- CALL / PUT toggle -->
+          <div id="dirOptRow">
+            <div class="tos-section-label">TYPE</div>
+            <div class="tos-callput-row" id="optionTypeField">
+              <button type="button" class="tos-cp-btn tos-call active" id="optCall" onclick="setOptType('CALL')">CALL</button>
+              <button type="button" class="tos-cp-btn tos-put" id="optPut" onclick="setOptType('PUT')">PUT</button>
+            </div>
+          </div>
+
+          <!-- Strike + Expiry -->
+          <div id="optionsFields">
+            <div class="tos-row2">
+              <div class="tos-field">
+                <div class="tos-section-label">STRIKE</div>
+                <input type="number" id="sigStrike" class="tos-input" step="0.5" placeholder="—" />
+              </div>
+              <div class="tos-field">
+                <div class="tos-section-label">EXPIRY</div>
+                <select id="sigExpiry" class="tos-input" onchange="onExpiryChange()"><option value="">—</option></select>
+              </div>
+            </div>
+            <input type="hidden" id="sigPremium" />
+          </div>
+
+          <!-- Equity fields -->
+          <div id="equityFields" class="hidden">
+            <div class="tos-row2">
+              <div class="tos-field">
+                <div class="tos-section-label">SHARES</div>
+                <input type="number" id="sigEqQty" class="tos-input" value="1" min="1" />
+              </div>
+              <div class="tos-field">
+                <div class="tos-section-label">LIMIT $</div>
+                <input type="number" id="sigEqPrice" class="tos-input" step="0.01" placeholder="MKT" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Qty row: stepper + quick picks -->
+          <div class="tos-qty-section">
+            <div class="tos-section-label">QTY</div>
+            <div class="tos-qty-row">
+              <button class="tos-qty-step" onclick="stepQty(-1)">−</button>
+              <input type="number" id="sigOptQty" class="tos-qty-input" value="1" min="1" />
+              <button class="tos-qty-step" onclick="stepQty(1)">+</button>
+              <button class="tos-qty-quick" onclick="setQty(1)">1</button>
+              <button class="tos-qty-quick" onclick="setQty(3)">3</button>
+              <button class="tos-qty-quick" onclick="setQty(5)">5</button>
+              <button class="tos-qty-quick" onclick="setQty(10)">10</button>
+            </div>
+          </div>
+
+          <!-- TIF + price hint -->
+          <div class="tos-tif-row">
+            <span class="tos-section-label">TIF</span>
+            <label class="tos-tif-opt">
+              <input type="checkbox" id="sigExtendedHours" checked />
+              <span>GTC</span>
+            </label>
+            <span class="tos-section-label" style="margin-left:auto">MID <span id="tosMidPrice" class="tos-mid-val">—</span></span>
+          </div>
+
+
+
+          <!-- Secondary: watchlist save -->
+          <button type="button" class="tos-watch-btn" onclick="addOptionToWatchlist()">★ Save to Watchlist</button>
+          <div class="modal-error" id="publishError"></div>
+        </div>
+
+        <!-- Options chain ladder panel -->
+        <div class="panel panel-compact tw-chain-col" id="optionsFields-ladder" style="overflow:hidden;display:flex;flex-direction:column">
+          <div id="optionsChainWrap" class="hidden" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+            <div class="chain-head">
+              <span class="chain-title">Options ladder <button class="chain-toggle-btn" onclick="toggleChainBody()" id="chainToggleBtn">▲ collapse</button></span>
+              <span class="ladder-mode" id="ladderMode">BUY CALL</span>
+            </div>
+            <div id="chainBody" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+              <div class="chain-meta" id="chainMeta" style="margin-bottom:4px"></div>
+              <div class="ladder-legend">
+                <span id="legCall" style="color:var(--green)">◀ CALLS</span>
+                <span>tap a row to fill</span>
+                <span id="legPut" style="color:var(--red)">PUTS ▶</span>
+              </div>
+              <div class="ladder-scroll" id="ladderScroll" style="flex:1;overflow-y:auto"><table class="ladder" id="ladderTable"></table></div>
+            </div>
+          </div>
+          <div id="ladderRightPlaceholder" class="ladder-placeholder" style="display:flex;align-items:center;justify-content:center;flex:1">Search a ticker to load its options chain →</div>
+        </div>
+
+      </div>
+    </div>
+    <div class="tw-collapse-bar">
+      <button class="trade-collapse-btn" onclick="toggleTwRow('twRow1','twBtn1')" id="twBtn1">▲ collapse</button>
+      <span class="tw-row-label">Trade / Chain</span>
+    </div>
+
+    <!-- ROW 2: Watchlist + Saved-item Ladder — collapsible -->
+    <div class="tw-row" id="twRow2" style="margin-top:14px">
+      <div class="tw-row-inner tw-row2-grid">
+
+        <!-- Watchlist -->
+        <div class="panel panel-compact" style="overflow-y:auto">
+          <div class="panel-head">
+            <h3>Watchlist</h3>
+            <span class="section-count" id="watchlistCount">0</span>
+          </div>
+          <div class="panel-sub" style="margin-bottom:8px">Click an item to load its ladder →</div>
+          <div id="optionWatchlist"></div>
+        </div>
+
+        <!-- Saved-item Ladder -->
+        <div class="panel panel-compact" style="overflow-y:auto">
+          <div class="panel-head"><h3>Ladder</h3><span class="panel-sub" style="margin:0">Click a watchlist item to load</span></div>
+          <div id="ladderView" style="margin-top:8px">
+            <div class="ladder-placeholder">Click any watchlist item to open its ladder here.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="tw-collapse-bar" style="margin-bottom:18px">
+      <button class="trade-collapse-btn" onclick="toggleTwRow('twRow2','twBtn2')" id="twBtn2">▲ collapse</button>
+      <span class="tw-row-label">Watchlist / Ladder</span>
+    </div>
+
+    <div class="panel" style="margin-top:22px">
+      <div class="panel-head">
+        <h3>Open Positions</h3>
+        <span class="section-count" id="pubPositionsCount">0</span>
+      </div>
+      <div class="pos-filter-row">
+        <button class="pos-filter-btn active" onclick="filterPubPositions('all',this)">All</button>
+        <button class="pos-filter-btn" onclick="filterPubPositions('options',this)">Options</button>
+        <button class="pos-filter-btn" onclick="filterPubPositions('stocks',this)">Stocks</button>
+      </div>
+      <div id="pubPositionsList"><div class="empty">No open positions.</div></div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <div class="panel-head">
+        <h3>Your recent signals</h3>
+        <span class="section-count"><span class="live-dot"></span>Live</span>
+      </div>
+      <div id="mySignalsList"></div>
+    </div>
+  </div>
+
+  <div id="tr-tab-2" class="tr-tab hidden">
+    <div class="panel">
+      <h3>Analytics overview</h3>
+      <div class="panel-sub">Stats across all your signals and follower copies.</div>
+      <div id="analyticsContent">Loading…</div>
+    </div>
+  </div>
+
+  <div id="tr-tab-3" class="tr-tab hidden">
+    <div class="panel">
+      <h3>Active followers</h3>
+      <div id="followersList"></div>
+    </div>
+  </div>
+
+  <div id="tr-tab-4" class="tr-tab hidden">
+    <div class="panel">
+      <div class="panel-head">
+        <h3>All my signals</h3>
+        <span class="section-count" id="allSignalsCount">0</span>
+      </div>
+      <div class="signal-filters">
+        <select id="filterTicker" onchange="renderFilteredSignals()"><option value="">All tickers</option></select>
+        <select id="filterType" onchange="renderFilteredSignals()">
+          <option value="">All types</option>
+          <option value="CALL">Calls</option>
+          <option value="PUT">Puts</option>
+        </select>
+        <input type="date" id="filterDate" onchange="renderFilteredSignals()" />
+        <button class="filter-clear" onclick="clearSignalFilters()">Clear</button>
+      </div>
+      <div id="allMySignals"></div>
+    </div>
+  </div>
+
+  <div id="tr-tab-5" class="tr-tab hidden">
+    <div class="panel">
+      <div id="pubCalendar"></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+const API = '';
+
+// ── Theme (light / dark) ────────────────────────────────────────────────────
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('signalboxx_theme', next);
+  applyTheme(next);
+}
+applyTheme(localStorage.getItem('signalboxx_theme') || 'light');
+
+let token = localStorage.getItem('signalboxx_token') || '';
+let currentDomMid = null; // mid price from last-built DOM ladder
+let currentUser = null;
+let traderProfile = null;
+let isTraderMode = false;
+let isRegister = false;
+let signalFormTab = 'options';
+let signalDirection = 'BUY';
+let signalOptType = 'CALL';
+let followedTraders = new Set();
+let traderMultipliers = {};
+let currentQuote = null;
+let confirmPayload = null;
+
+function authHeaders() { return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }; }
+async function apiFetch(path, opts = {}) {
+  const { headers: extraHeaders, ...restOpts } = opts;
+  const mergedHeaders = { ...authHeaders(), ...(extraHeaders || {}) };
+  const r = await fetch(`${API}${path}`, { headers: mergedHeaders, ...restOpts });
+  if (r.status === 401) { localStorage.removeItem('signalboxx_token'); token = ''; showLoginModal(); return null; }
+  return r;
+}
+function showToast(msg) {
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+function usdFmt(n) { return '$' + parseFloat(n).toFixed(2); }
+function escHtml(s) { return (s||'').toString().replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]); }
+
+/* AUTH */
+function showLoginModal() {
+  document.getElementById('loggedOutSplash').style.display = 'flex';
+  document.getElementById('loginModal').classList.remove('hidden');
+  document.getElementById('appMain').classList.add('hidden');
+}
+function hideLoginModal() {
+  document.getElementById('loginModal').classList.add('hidden');
+  document.getElementById('forgotModal').classList.add('hidden');
+  document.getElementById('resetModal').classList.add('hidden');
+  document.getElementById('loggedOutSplash').style.display = 'none';
+  document.getElementById('appMain').classList.remove('hidden');
+  document.getElementById('userPill').style.display = 'flex';
+  document.getElementById('roleBadge').style.display = 'inline-block';
+  document.getElementById('roleSwitchBtn').style.display = 'inline-block';
+}
+function logout() {
+  token = ''; currentUser = null; traderProfile = null; isTraderMode = false;
+  localStorage.removeItem('signalboxx_token');
+  document.getElementById('userPill').style.display = 'none';
+  document.getElementById('roleBadge').style.display = 'none';
+  document.getElementById('roleSwitchBtn').style.display = 'none';
+  document.getElementById('brokerPill').style.display = 'none';
+  document.getElementById('brokerBanner').classList.add('hidden');
+  setAuthMode(false); showLoginModal();
+}
+function setAuthMode(register) {
+  isRegister = register;
+  document.getElementById('tabSignIn').classList.toggle('active', !register);
+  document.getElementById('tabCreate').classList.toggle('active', register);
+  document.getElementById('usernameField').style.display = register ? 'block' : 'none';
+  document.getElementById('forgotLink').style.display = register ? 'none' : 'block';
+  document.getElementById('authBtn').textContent = register ? 'Create account' : 'Sign in';
+  document.getElementById('authError').textContent = '';
+}
+async function handleAuth() {
+  const email = document.getElementById('emailInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+  const username = document.getElementById('usernameInput').value.trim();
+  const errEl = document.getElementById('authError'); errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = 'Email and password required.'; return; }
+  if (isRegister) {
+    if (!username) { errEl.textContent = 'Username required.'; return; }
+    const r = await fetch(`${API}/api/users/register/`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, username, password}) });
+    if (!r.ok) { const d = await r.json(); errEl.textContent = Object.values(d).flat().join(' '); return; }
+  }
+  const r = await fetch(`${API}/api/auth/token/`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password}) });
+  if (!r.ok) { errEl.textContent = 'Invalid email or password.'; return; }
+  const d = await r.json();
+  token = d.access;
+  localStorage.setItem('signalboxx_token', token);
+  hideLoginModal(); checkAuth();
+}
+
+/* FORGOT/RESET */
+function showForgotModal() {
+  document.getElementById('loginModal').classList.add('hidden');
+  document.getElementById('forgotModal').classList.remove('hidden');
+  document.getElementById('forgotEmailInput').value = document.getElementById('emailInput').value || '';
+  document.getElementById('forgotError').textContent = '';
+}
+function closeForgotModal() {
+  document.getElementById('forgotModal').classList.add('hidden');
+  document.getElementById('loginModal').classList.remove('hidden');
+}
+async function handleForgotPassword() {
+  const email = document.getElementById('forgotEmailInput').value.trim();
+  const errEl = document.getElementById('forgotError');
+  errEl.textContent = ''; errEl.style.color = '';
+  if (!email) { errEl.textContent = 'Please enter your email.'; return; }
+  const btn = event.target; btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    await fetch(`${API}/api/users/forgot-password/`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email}) });
+    errEl.style.color = 'var(--green)';
+    errEl.textContent = 'If that email exists, a reset link has been sent.';
+    btn.textContent = 'Sent ✓';
+  } catch { errEl.textContent = 'Something went wrong.'; btn.disabled = false; btn.textContent = 'Send reset link'; }
+}
+async function handleResetPassword() {
+  const newPw = document.getElementById('resetPasswordInput').value;
+  const confirmPw = document.getElementById('resetConfirmInput').value;
+  const errEl = document.getElementById('resetError');
+  errEl.style.color = ''; errEl.textContent = '';
+  if (newPw.length < 8) { errEl.textContent = 'Password must be at least 8 characters.'; return; }
+  if (newPw !== confirmPw) { errEl.textContent = 'Passwords do not match.'; return; }
+  const params = new URLSearchParams(window.location.search);
+  const btn = event.target; btn.disabled = true; btn.textContent = 'Resetting…';
+  try {
+    const r = await fetch(`${API}/api/users/reset-password/`, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ uid: params.get('uid'), token: params.get('token'), new_password: newPw }) });
+    const d = await r.json();
+    if (!r.ok) { errEl.textContent = d.error || 'Invalid or expired link.'; btn.disabled = false; btn.textContent = 'Reset password'; return; }
+    errEl.style.color = 'var(--green)';
+    errEl.textContent = 'Password updated. Redirecting…';
+    setTimeout(() => { window.history.replaceState({}, '', '/'); document.getElementById('resetModal').classList.add('hidden'); showLoginModal(); }, 1500);
+  } catch { errEl.textContent = 'Something went wrong.'; btn.disabled = false; btn.textContent = 'Reset password'; }
+}
+
+/* CHECK AUTH / LOAD */
+async function checkAuth() {
+  if (!token) { showLoginModal(); return; }
+  const r = await apiFetch('/api/users/me/');
+  if (!r || !r.ok) { showLoginModal(); return; }
+  currentUser = await r.json();
+  document.getElementById('userPillName').textContent = currentUser.username;
+  hideLoginModal();
+  isTraderMode = currentUser.preferred_mode === 'publisher' && currentUser.is_trader;
+  updateRoleUI();
+  await Promise.all([loadBroker(), loadView()]);
+}
+async function loadBroker() {
+  const pill = document.getElementById('brokerPill');
+  const pillText = document.getElementById('brokerPillText');
+  const ribbon = document.getElementById('accountRibbon');
+  pill.style.display = 'inline-flex';
+  const r = await apiFetch('/api/brokers/connections/');
+  if (!r || !r.ok) {
+    pill.classList.remove('connected', 'disconnected');
+    pillText.textContent = 'Connect broker';
+    document.getElementById('brokerBanner').classList.remove('hidden');
+    ribbon.classList.remove('visible');
+    return;
+  }
+  const conns = await r.json();
+  const active = conns.filter(c => c.status === 'connected');
+  if (active.length) {
+    pill.classList.add('connected');
+    pill.classList.remove('disconnected');
+    pillText.textContent = active[0].snaptrade_brokerage_name || active[0].broker || 'Broker connected';
+    document.getElementById('brokerBanner').classList.add('hidden');
+    loadAccountSummary();
+  } else {
+    pill.classList.remove('connected');
+    pill.classList.add('disconnected');
+    pillText.textContent = 'Connect broker';
+    document.getElementById('brokerBanner').classList.remove('hidden');
+    ribbon.classList.remove('visible');
+  }
+}
+
+let _accountSummaryTimer = null;
+function toggleRibbon() {
+  const r = document.getElementById('accountRibbon');
+  const collapsed = r.classList.toggle('collapsed');
+  document.getElementById('ribbonCollapse').textContent = collapsed ? '▸' : '▾';
+  localStorage.setItem('signalboxx_ribbon_collapsed', collapsed ? '1' : '0');
+}
+async function loadAccountSummary() {
+  const ribbon = document.getElementById('accountRibbon');
+  const r = await apiFetch('/api/brokers/account-summary/');
+  if (!r || !r.ok) { ribbon.classList.remove('visible'); return; }
+  const d = await r.json();
+  if (!d.connected) { ribbon.classList.remove('visible'); return; }
+
+  ribbon.classList.add('visible');
+  // Apply saved collapsed state
+  if (localStorage.getItem('signalboxx_ribbon_collapsed') === '1') {
+    ribbon.classList.add('collapsed');
+    document.getElementById('ribbonCollapse').textContent = '▸';
+  }
+  const fmt = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('ribbonBalance').textContent = '$' + fmt(d.total_balance || 0);
+  document.getElementById('ribbonBroker').textContent = d.broker_name || '—';
+
+  const pnl = d.pnl_today || 0;
+  const pnlEl = document.getElementById('ribbonPnl');
+  pnlEl.textContent = (pnl >= 0 ? '+' : '−') + '$' + fmt(Math.abs(pnl));
+  pnlEl.className = 'ribbon-stat-value ' + (pnl > 0 ? 'positive' : pnl < 0 ? 'negative' : '');
+
+  const pct = d.pnl_today_pct || 0;
+  const pctEl = document.getElementById('ribbonPnlPct');
+  pctEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+  pctEl.className = 'ribbon-stat-value ' + (pct > 0 ? 'positive' : pct < 0 ? 'negative' : '');
+
+  document.getElementById('ribbonPositions').textContent = d.open_positions || 0;
+  document.getElementById('ribbonFollowers').textContent = d.followers_count || 0;
+
+  // Refresh every 30s
+  if (_accountSummaryTimer) clearTimeout(_accountSummaryTimer);
+  _accountSummaryTimer = setTimeout(loadAccountSummary, 30000);
+}
+async function loadView() {
+  if (isTraderMode) {
+    document.getElementById('subscriberView').classList.add('hidden');
+    document.getElementById('publisherView').classList.remove('hidden');
+    await loadTraderProfile(); await loadMySignals(); loadPositions();
+    renderTickerChips();
+    renderOptionWatchlist();
+  } else {
+    document.getElementById('publisherView').classList.add('hidden');
+    document.getElementById('subscriberView').classList.remove('hidden');
+    await Promise.all([loadPositions(), loadTraders(), loadOrders(), loadRiskSettings()]);
+  }
+}
+function updateRoleUI() {
+  document.getElementById('roleBadge').textContent = isTraderMode ? 'Publisher' : 'Subscriber';
+  document.getElementById('roleSwitchBtn').textContent = isTraderMode ? 'Switch to Subscriber →' : 'Switch to Publisher →';
+}
+async function toggleRole() {
+  if (!isTraderMode && (!currentUser || !currentUser.is_trader)) {
+    const name = prompt('Set up trader profile — display name:'); if (!name) return;
+    const username = prompt('Trader username (URL-safe):'); if (!username) return;
+    const r = await apiFetch('/api/traders/register/', { method:'POST', body: JSON.stringify({ name, username, bio: '' }) });
+    if (!r || !r.ok) { showToast('Could not create trader profile'); return; }
+    currentUser.is_trader = true;
+  }
+  isTraderMode = !isTraderMode;
+  await apiFetch('/api/users/me/', { method:'PATCH', body: JSON.stringify({ preferred_mode: isTraderMode ? 'publisher' : 'subscriber' }) });
+  updateRoleUI(); await loadView();
+}
+
+/* SUBSCRIBER */
+async function loadTraders() {
+  const [tradersR, relsR] = await Promise.all([apiFetch('/api/traders/'), apiFetch('/api/traders/relationships/')]);
+  if (relsR && relsR.ok) {
+    const rels = await relsR.json();
+    followedTraders.clear(); traderMultipliers = {};
+    rels.forEach(r => { followedTraders.add(r.trader.id); traderMultipliers[r.trader.id] = parseFloat(r.size_multiplier) || 1; });
+  }
+  if (!tradersR || !tradersR.ok) return;
+  const traders = await tradersR.json();
+  document.getElementById('tradersCount').textContent = traders.length;
+  renderTraders(traders);
+}
+function renderTraders(traders) {
+  const el = document.getElementById('tradersList');
+  if (!traders.length) { el.innerHTML = '<div class="empty">No traders yet. Be the first to publish signals.</div>'; return; }
+  el.innerHTML = traders.map((t,i) => {
+    const initials = (t.name || t.username).substring(0,2).toUpperCase();
+    const isFollowed = followedTraders.has(t.id);
+    const mult = traderMultipliers[t.id] || 1;
+    const multPills = isFollowed ? `<div class="mult-row">${[0.5,1,2,3,5].map(v => `<button class="mult-pill ${mult===v?'active':''}" onclick="setMultiplier(${t.id}, ${v})">${v}×</button>`).join('')}</div>` : '';
+    return `<div class="trader-card"><div class="avatar avatar-${i%5}">${initials}</div>
+      <div style="flex:1;min-width:0">
+        <div class="trader-name">${escHtml(t.name||t.username)} ${t.is_verified?'<span class="verified">✓</span>':''}</div>
+        <div class="trader-style">@${escHtml(t.username)}</div>
+        <div class="trader-stats"><span>${t.follower_count||0} followers</span></div>
+        ${multPills}
+      </div>
+      <button class="btn ${isFollowed?'':'btn-primary'}" onclick="toggleFollow(${t.id})">${isFollowed?'Following':'Follow'}</button>
+    </div>`;
+  }).join('');
+}
+async function setMultiplier(traderId, value) {
+  traderMultipliers[traderId] = value;
+  const r = await apiFetch(`/api/traders/${traderId}/follow/`, { method:'POST', body: JSON.stringify({ exec_mode:'auto', size_multiplier: value.toFixed(2) }) });
+  if (r && r.ok) { showToast(`Multiplier set to ${value}×`); loadTraders(); }
+}
+async function toggleFollow(traderId) {
+  if (followedTraders.has(traderId)) {
+    const r = await apiFetch(`/api/traders/${traderId}/follow/`, { method:'DELETE' });
+    if (r && r.ok) { followedTraders.delete(traderId); delete traderMultipliers[traderId]; showToast('Unfollowed'); }
+  } else {
+    const r = await apiFetch(`/api/traders/${traderId}/follow/`, { method:'POST', body: JSON.stringify({ exec_mode:'auto', size_multiplier:'1.00' }) });
+    if (r && r.ok) { followedTraders.add(traderId); traderMultipliers[traderId] = 1; showToast('Now following — signals will copy automatically'); }
+  }
+  loadTraders();
+}
+let _allPositions = [];
+async function loadPositions() {
+  // Try live broker positions first; fall back to internal DB
+  const r = await apiFetch('/api/brokers/live-positions/');
+  let real = [];
+  if (r && r.ok) {
+    const data = await r.json();
+    if (Array.isArray(data) && data.length) {
+      real = data;
+    } else {
+      // fallback to internal DB positions
+      const r2 = await apiFetch('/api/orders/positions/');
+      if (r2 && r2.ok) real = await r2.json();
+    }
+  }
+  _allPositions = [...real];
+  // populate subscriber panel
+  const subCount = document.getElementById('positionsCount');
+  if (subCount) subCount.textContent = _allPositions.length;
+  const exitBtn = document.getElementById('exitAllBtn');
+  if (exitBtn) exitBtn.style.display = _allPositions.length ? 'inline-flex' : 'none';
+  if (document.getElementById('positionsList')) renderPositions(_allPositions);
+  // populate publisher panel
+  const pubCount = document.getElementById('pubPositionsCount');
+  if (pubCount) pubCount.textContent = _allPositions.length;
+  if (document.getElementById('pubPositionsList')) renderPositions(_allPositions, 'pubPositionsList');
+}
+function filterPubPositions(type, btn) {
+  document.querySelectorAll('#pubPositionsList').forEach(() => {});
+  btn.closest('.panel').querySelectorAll('.pos-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = type === 'options' ? _allPositions.filter(p => p.option_type)
+    : type === 'stocks' ? _allPositions.filter(p => !p.option_type) : _allPositions;
+  renderPositions(filtered, 'pubPositionsList');
+}
+function filterPositions(type, btn) {
+  document.querySelectorAll('.pos-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = type === 'options'
+    ? _allPositions.filter(p => p.option_type)
+    : type === 'stocks'
+      ? _allPositions.filter(p => !p.option_type)
+      : _allPositions;
+  renderPositions(filtered);
+}
+function renderPositions(list, targetId) {
+  const el = document.getElementById(targetId || 'positionsList');
+  if (!list.length) { el.innerHTML = '<div class="empty">No open positions.</div>'; return; }
+  el.innerHTML = list.map(p => {
+    const isOpt = !!p.option_type;
+    const symbol = isOpt
+      ? `<span class="ticker-badge">${escHtml(p.ticker)}</span> <span class="opt-badge ${(p.option_type||'').toLowerCase()}">${p.option_type}</span>`
+      : `<span class="ticker-badge">${escHtml(p.ticker)}</span>`;
+    const strikeExpiry = isOpt
+      ? `${p.strike ? '$'+p.strike : '—'}`
+      : '—';
+    const expLabel = p.expiry
+      ? `${p.expiry}${p.expires_in_days != null ? ` <strong style="color:${p.expires_in_days<=1?'var(--red)':p.expires_in_days<=3?'var(--amber)':'var(--text)'}">(${p.expires_in_days}d)</strong>` : ''}`
+      : '—';
+    const entry = p.fill_price ? `$${parseFloat(p.fill_price).toFixed(2)}` : '—';
+    const dirCls = p.direction === 'BUY' ? 'side-buy' : 'side-sell';
+    const filledAt = p.filled_at ? new Date(p.filled_at).toLocaleDateString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+    return `<div class="pos-card" id="pos-${p.id}">
+      <div class="pos-primary">
+        <div class="pos-cell"><div class="pos-cell-label">Symbol</div><div class="pos-cell-val">${symbol}</div></div>
+        <div class="pos-cell"><div class="pos-cell-label">Side</div><div class="pos-cell-val ${dirCls}">${p.direction}</div></div>
+        <div class="pos-cell"><div class="pos-cell-label">Strike</div><div class="pos-cell-val">${strikeExpiry}</div></div>
+        <div class="pos-cell"><div class="pos-cell-label">Expiry</div><div class="pos-cell-val" style="font-size:12px">${expLabel}</div></div>
+        <div class="pos-cell"><div class="pos-cell-label">Entry</div><div class="pos-cell-val">${entry}</div></div>
+        <div class="pos-cell"><div class="pos-cell-label">Qty</div><div class="pos-cell-val">${p.quantity}</div></div>
+      </div>
+      <div class="pos-secondary">
+        <span>Order: <strong>${p.order_type}</strong></span>
+        <span>Filled: <strong>${filledAt}</strong></span>
+        ${p.expires_in_days != null ? `<span>Expires in: <strong>${p.expires_in_days} day${p.expires_in_days!==1?'s':''}</strong></span>` : ''}
+      </div>
+      <div class="pos-actions">
+        <select class="pos-order-sel" id="pos-sel-${p.id}" onchange="toggleLimitInput(${p.id})">
+          <option value="market">Market</option>
+          <option value="limit">Limit</option>
+        </select>
+        <input class="pos-limit-input" id="pos-lim-${p.id}" type="number" step="0.01" placeholder="Limit $">
+        <button class="pos-exit-btn" id="pos-exit-${p.id}" onclick="exitPosition(${p.id})">Exit Position</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleLimitInput(id) {
+  const sel = document.getElementById('pos-sel-' + id);
+  const inp = document.getElementById('pos-lim-' + id);
+  if (inp) inp.style.display = sel && sel.value === 'limit' ? 'block' : 'none';
+}
+async function exitAllPositions() {
+  if (!_allPositions.length) return;
+  const btn = document.getElementById('exitAllBtn');
+  const confirmed = confirm(`Exit all ${_allPositions.length} open position${_allPositions.length > 1 ? 's' : ''} at market price?`);
+  if (!confirmed) return;
+  if (btn) { btn.disabled = true; btn.textContent = 'Exiting…'; }
+  let succeeded = 0, failed = 0;
+  for (const p of _allPositions) {
+    const r = await apiFetch(`/api/orders/${p.id}/exit/`, { method:'POST', body: JSON.stringify({ order_type: 'market' }) });
+    if (r && r.ok) succeeded++;
+    else failed++;
+  }
+  showToast(failed === 0 ? `All ${succeeded} position${succeeded > 1 ? 's' : ''} exited ✓` : `${succeeded} exited, ${failed} failed`);
+  await loadPositions();
+}
+async function exitPosition(id) {
+  const btn = document.getElementById('pos-exit-' + id);
+  const sel = document.getElementById('pos-sel-' + id);
+  const lim = document.getElementById('pos-lim-' + id);
+  if (btn) btn.disabled = true;
+  const body = { order_type: sel ? sel.value : 'market' };
+  if (sel && sel.value === 'limit' && lim && lim.value) body.limit_price = parseFloat(lim.value);
+  const r = await apiFetch(`/api/orders/${id}/exit/`, { method:'POST', body: JSON.stringify(body) });
+  if (r && r.ok) {
+    showToast('Exit order placed ✓');
+    document.getElementById('pos-' + id)?.remove();
+    const remaining = document.querySelectorAll('.pos-card').length;
+    document.getElementById('positionsCount').textContent = remaining;
+    if (!remaining) document.getElementById('positionsList').innerHTML = '<div class="empty">No open positions.</div>';
+  } else {
+    const d = r ? await r.json().catch(()=>({})) : {};
+    showToast('Exit failed: ' + (d.error || 'unknown error'));
+    if (btn) btn.disabled = false;
+  }
+}
+async function loadOrders() {
+  const r = await apiFetch('/api/orders/');
+  if (!r || !r.ok) return;
+  const orders = await r.json();
+  document.getElementById('ordersCount').textContent = orders.length;
+  const el = document.getElementById('ordersList');
+  if (!orders.length) { el.innerHTML = '<div class="empty">No orders yet. Follow a trader to start.</div>'; return; }
+  el.innerHTML = orders.slice(0,20).map(o => {
+    const multLabel = o.size_multiplier && parseFloat(o.size_multiplier) !== 1 ? `<span class="mult-badge">${parseFloat(o.size_multiplier)}×</span>` : '';
+    const errLine = o.error_message ? `<div class="exec-result error"><div class="er-detail">${escHtml(o.error_message)}</div></div>` : '';
+    return `<div class="list-row">
+      <div class="row-head">
+        <div><span class="ticker-badge">${escHtml(o.ticker)}</span> <span class="side-${o.direction.toLowerCase()==='buy'?'buy':'sell'}">${o.direction}</span> ${o.quantity}${multLabel}</div>
+        <span class="status-pill status-${o.status}">${o.status}</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">${o.order_type}${o.limit_price?' @ '+o.limit_price:''} · ${new Date(o.created_at).toLocaleString()}</div>
+      ${errLine}
+    </div>`;
+  }).join('');
+}
+async function loadRiskSettings() {
+  const r = await apiFetch('/api/risk-settings/');
+  if (!r || !r.ok) return;
+  const s = await r.json();
+  document.getElementById('riskSettings').innerHTML = `
+    <div class="form-row"><div class="form-field"><label>Max trades/day</label><input type="number" id="riskMaxTrades" value="${s.max_trades_per_day}" onchange="saveRisk()" /></div>
+    <div class="form-field"><label>Daily loss ($)</label><input type="number" id="riskLossLimit" value="${s.daily_loss_limit}" onchange="saveRisk()" /></div></div>
+    <div class="form-field"><label>Max position ($)</label><input type="number" id="riskPosSize" value="${s.max_position_size}" onchange="saveRisk()" /></div>
+    <div class="tog-row"><div><div class="tog-label">Slippage guard</div><div class="tog-help">Convert market → limit orders</div></div><label class="toggle-switch"><input type="checkbox" id="riskSlip" ${s.slippage_guard_enabled?'checked':''} onchange="saveRisk()"><span class="slider"></span></label></div>
+    <button class="modal-btn" onclick="toggleKillSwitch(${!s.kill_switch_active})" style="background:${s.kill_switch_active?'var(--red)':'var(--black-btn)'};margin-top:14px">${s.kill_switch_active?'⛔ Kill switch ACTIVE — click to disable':'Activate kill switch'}</button>`;
+}
+async function saveRisk() {
+  const body = {
+    max_trades_per_day: parseInt(document.getElementById('riskMaxTrades').value),
+    daily_loss_limit: parseFloat(document.getElementById('riskLossLimit').value),
+    max_position_size: parseFloat(document.getElementById('riskPosSize').value),
+    slippage_guard_enabled: document.getElementById('riskSlip').checked,
+  };
+  await apiFetch('/api/risk-settings/', { method:'PATCH', body: JSON.stringify(body) });
+  showToast('Risk settings saved');
+}
+async function toggleKillSwitch(activate) {
+  await apiFetch('/api/kill-switch/', { method:'POST', body: JSON.stringify({ active: activate }) });
+  showToast(activate ? '⛔ Kill switch ACTIVATED — all open orders cancelled' : 'Kill switch off');
+  loadRiskSettings();
+}
+
+/* PUBLISHER */
+function toggleTwRow(rowId, btnId) {
+  const row = document.getElementById(rowId);
+  const btn = document.getElementById(btnId);
+  if (!row) return;
+  // Set explicit max-height before collapsing so transition works
+  if (!row.classList.contains('collapsed')) {
+    row.style.maxHeight = row.scrollHeight + 'px';
+    requestAnimationFrame(() => { row.classList.add('collapsed'); row.style.maxHeight = ''; });
+    if (btn) btn.textContent = '▼ expand';
+  } else {
+    row.classList.remove('collapsed');
+    row.style.maxHeight = '';
+    if (btn) btn.textContent = '▲ collapse';
+  }
+}
+function switchTraderTab(id) {
+  document.querySelectorAll('#publisherView .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+  document.querySelectorAll('.tr-tab').forEach(t => t.classList.toggle('hidden', t.id !== id));
+  if (id === 'tr-tab-2') loadAnalytics();
+  if (id === 'tr-tab-3') loadFollowers();
+  if (id === 'tr-tab-4') loadAllMySignals();
+  if (id === 'tr-tab-5') loadCalendar('pub');
+}
+function switchSubTab(id) {
+  document.querySelectorAll('#subscriberView .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.toggle('hidden', t.id !== id));
+  if (id === 'sub-tab-2') loadCalendar('sub');
+}
+
+// ── P&L Calendar ────────────────────────────────────────────────────────────
+const calState = {};
+async function loadCalendar(which) {
+  if (!calState[which]) {
+    const now = new Date();
+    calState[which] = { year: now.getFullYear(), month: now.getMonth() };
+  }
+  const st = calState[which];
+  const monthStr = `${st.year}-${String(st.month + 1).padStart(2, '0')}`;
+  let data = { days: {}, month_total: 0, total_trades: 0 };
+  const r = await apiFetch(`/api/analytics/calendar/?month=${monthStr}`);
+  if (r && r.ok) data = await r.json();
+  renderCalendarGrid(which, st, data);
+}
+function calNav(which, delta) {
+  const st = calState[which];
+  st.month += delta;
+  if (st.month < 0) { st.month = 11; st.year--; }
+  if (st.month > 11) { st.month = 0; st.year++; }
+  loadCalendar(which);
+}
+function renderCalendarGrid(which, st, data) {
+  const containerId = which === 'sub' ? 'subCalendar' : 'pubCalendar';
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const firstDay = new Date(st.year, st.month, 1).getDay();
+  const daysInMonth = new Date(st.year, st.month + 1, 0).getDate();
+  const money = (n) => Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const total = data.month_total || 0;
+  const totCls = total > 0 ? 'cal-tot-pos' : total < 0 ? 'cal-tot-neg' : '';
+  const totStr = `${total >= 0 ? '+' : '−'}$${money(total)}`;
+
+  let cells = '';
+  for (let i = 0; i < firstDay; i++) cells += '<div class="cal-cell empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${st.year}-${String(st.month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const day = data.days[dateStr];
+    let cls = 'cal-cell', inner = `<div class="cal-date">${d}</div>`;
+    if (day) {
+      const pnl = day.pnl;
+      cls += pnl > 0 ? ' cal-win' : pnl < 0 ? ' cal-loss' : '';
+      const pcls = pnl > 0 ? 'cal-pos' : pnl < 0 ? 'cal-neg' : '';
+      inner += `<div class="cal-pnl ${pcls}">${pnl >= 0 ? '+' : '−'}$${money(pnl)}</div>`;
+      inner += `<div class="cal-trades">${day.trades} trade${day.trades !== 1 ? 's' : ''}</div>`;
+    }
+    cells += `<div class="${cls}">${inner}</div>`;
+  }
+  const weekdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(w => `<div class="cal-weekday">${w}</div>`).join('');
+
+  document.getElementById(containerId).innerHTML = `
+    <div class="cal-header">
+      <div>
+        <h3 style="margin:0">Your P&L</h3>
+        <div class="panel-sub" style="margin:2px 0 0">Realized P&L from broker fills — FIFO matched.</div>
+      </div>
+      <div class="cal-nav">
+        <button onclick="calNav('${which}',-1)">‹</button>
+        <span class="cal-month">${monthNames[st.month]} ${st.year}</span>
+        <button onclick="calNav('${which}',1)">›</button>
+      </div>
+    </div>
+    <div class="cal-total">Month total: <span class="${totCls}">${totStr}</span> · ${data.total_trades || 0} trade${data.total_trades !== 1 ? 's' : ''}</div>
+    <div class="cal-grid">${weekdays}${cells}</div>`;
+}
+async function loadTraderProfile() {
+  const r = await apiFetch('/api/traders/me/');
+  if (!r || !r.ok) return;
+  traderProfile = await r.json();
+}
+function switchFormTab(which) {
+  signalFormTab = which;
+  document.getElementById('optTabOptions').classList.toggle('active', which === 'options');
+  document.getElementById('optTabEquity').classList.toggle('active', which === 'equity');
+  document.getElementById('optionsFields').classList.toggle('hidden', which !== 'options');
+  document.getElementById('equityFields').classList.toggle('hidden', which !== 'equity');
+  // Option-type sits beside Direction; hide it (and collapse the row) for equity
+  const optTypeField = document.getElementById('optionTypeField');
+  const dirOptRow = document.getElementById('dirOptRow');
+  if (optTypeField && dirOptRow) {
+    optTypeField.style.display = which === 'options' ? '' : 'none';
+    dirOptRow.style.gridTemplateColumns = which === 'options' ? '' : '1fr';
+  }
+  // Quote card (stock price) only shown for equity
+  const qc = document.getElementById('quoteCard');
+  if (qc) qc.style.display = which === 'options' ? 'none' : '';
+  if (which === 'options') {
+    const ticker = document.getElementById('sigTicker').value.trim().toUpperCase();
+    if (ticker && !chainData) fetchOptionsChain(ticker);
+  } else {
+    stopDom();
+  }
+}
+function setDirection(d) {
+  signalDirection = d;
+  document.getElementById('dirBuy').classList.toggle('active', d === 'BUY');
+  document.getElementById('dirBuy').classList.toggle('buy', d === 'BUY');
+  document.getElementById('dirSell').classList.toggle('active', d === 'SELL');
+  document.getElementById('dirSell').classList.toggle('sell', d === 'SELL');
+  updateLadderMode();
+}
+function setOptType(t) {
+  signalOptType = t;
+  document.getElementById('optCall').classList.toggle('active', t === 'CALL');
+  document.getElementById('optCall').classList.toggle('buy', t === 'CALL');
+  document.getElementById('optPut').classList.toggle('active', t === 'PUT');
+  document.getElementById('optPut').classList.toggle('sell', t === 'PUT');
+  updateLadderMode();
+}
+function updateLadderMode() {
+  const modeEl = document.getElementById('ladderMode');
+  if (modeEl) {
+    modeEl.textContent = signalDirection + ' ' + signalOptType;
+    modeEl.className = 'ladder-mode ' + signalDirection.toLowerCase() + '-' + signalOptType.toLowerCase();
+  }
+  const tbl = document.getElementById('ladderTable');
+  if (tbl) {
+    tbl.classList.toggle('side-call', signalOptType === 'CALL');
+    tbl.classList.toggle('side-put', signalOptType === 'PUT');
+  }
+  const lc = document.getElementById('legCall'), lp = document.getElementById('legPut');
+  if (lc && lp) {
+    lc.className = signalOptType === 'CALL' ? 'leg-on' : 'leg-dim';
+    lp.className = signalOptType === 'PUT' ? 'leg-on' : 'leg-dim';
+  }
+}
+
+/* Watchlist (localStorage-backed) */
+function getWatchlist() {
+  try { return JSON.parse(localStorage.getItem('signalboxx_watchlist') || '[]'); }
+  catch { return []; }
+}
+function saveWatchlist(list) { localStorage.setItem('signalboxx_watchlist', JSON.stringify(list)); }
+function addToWatchlist() {
+  const t = (document.getElementById('sigTicker').value || '').trim().toUpperCase();
+  if (!t) { showToast('Enter a ticker first'); return; }
+  const list = getWatchlist();
+  if (list.includes(t)) { showToast(t + ' is already in your watchlist'); return; }
+  list.push(t);
+  saveWatchlist(list);
+  renderTickerChips();
+  showToast('★ ' + t + ' added to watchlist');
+}
+function removeFromWatchlist(t, ev) {
+  if (ev) ev.stopPropagation();
+  saveWatchlist(getWatchlist().filter(x => x !== t));
+  renderTickerChips();
+  showToast(t + ' removed from watchlist');
+}
+
+/* Option watchlist — full trade setups (localStorage-backed) */
+function getOptionWatchlist() {
+  try { return JSON.parse(localStorage.getItem('signalboxx_optwatch') || '[]'); }
+  catch { return []; }
+}
+function saveOptionWatchlist(list) { localStorage.setItem('signalboxx_optwatch', JSON.stringify(list)); }
+
+// Unique key — same contract counts as a duplicate
+function _watchKey(v) {
+  const isOpt = v._tab === 'options' || (v.option_type && v.strike);
+  if (isOpt) return ['O', v.ticker, v.direction, v.option_type, v.strike, v.expiry].join('|');
+  return ['E', v.ticker, v.direction].join('|');
+}
+
+// Current time in US Eastern
+function nowET() {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+}
+
+// Drop options that have expired — past expiry, or expiring today after 6 PM ET
+function pruneWatchlist() {
+  const et = nowET();
+  const todayET = `${et.getFullYear()}-${String(et.getMonth() + 1).padStart(2, '0')}-${String(et.getDate()).padStart(2, '0')}`;
+  const past6pm = et.getHours() >= 18;
+  const list = getOptionWatchlist();
+  const kept = list.filter(it => {
+    if (!it.expiry) return true;                          // equity / no expiry
+    if (it.expiry < todayET) return false;                // already past
+    if (it.expiry === todayET && past6pm) return false;   // expiring today, after 6 PM ET
+    return true;
+  });
+  if (kept.length !== list.length) saveOptionWatchlist(kept);
+  return kept;
+}
+
+function addOptionToWatchlist() {
+  const v = _getFormValues();
+  if (!v.ticker) { showToast('Enter a ticker first'); return; }
+  // Guard: don't add expired expiries — they'd be pruned immediately
+  if (v.expiry) {
+    const et = nowET();
+    const todayET = `${et.getFullYear()}-${String(et.getMonth()+1).padStart(2,'0')}-${String(et.getDate()).padStart(2,'0')}`;
+    const past6pm = et.getHours() >= 18;
+    if (v.expiry < todayET || (v.expiry === todayET && past6pm)) {
+      showToast('⚠ Expiry has already passed — pick a future date');
+      return;
+    }
+  }
+  v._tab = signalFormTab;
+  const list = pruneWatchlist();
+  const key = _watchKey(v);
+  if (list.some(x => _watchKey(x) === key)) {
+    showToast('Option already in watchlist');
+    return;
+  }
+  v._id = Date.now();
+  list.unshift(v);
+  saveOptionWatchlist(list);
+  renderOptionWatchlist();
+  showToast('★ ' + v.ticker + ' added to watchlist');
+}
+function deleteWatchItem(id) {
+  saveOptionWatchlist(getOptionWatchlist().filter(x => x._id !== id));
+  renderOptionWatchlist();
+}
+function renderOptionWatchlist() {
+  const el = document.getElementById('optionWatchlist');
+  if (!el) return;
+  const list = pruneWatchlist();
+  const countEl = document.getElementById('watchlistCount');
+  if (countEl) countEl.textContent = list.length;
+  if (!list.length) {
+    el.innerHTML = '<div class="empty">No items yet. Build a trade on the left and click "★ Add to watchlist".</div>';
+    return;
+  }
+  const rows = list.map(it => {
+    const isOpt = it._tab === 'options' || (it.option_type && it.strike);
+    const dirColor = it.direction === 'BUY' ? 'var(--green)' : 'var(--red)';
+    const tk = escHtml(it.ticker);
+    const typeLabel = isOpt ? `${it.option_type || ''}` : 'EQT';
+    const strikeLabel = it.strike ? `$${it.strike}` : '—';
+    const expiryLabel = it.expiry ? it.expiry.replace('2026-','') : '—';
+    const qtyLabel = it.quantity || 1;
+    return `<tr class="wl-row" id="wl-${it._id}" onclick="tradeWatchItem(${it._id})">
+      <td class="wl-td wl-td-ticker">${tk}</td>
+      <td class="wl-td wl-td-exp">${expiryLabel}</td>
+      <td class="wl-td">${typeLabel}</td>
+      <td class="wl-td wl-td-strike">${strikeLabel}</td>
+      <td class="wl-td wl-td-del"><button class="wl-del-btn" onclick="deleteWatchItem(${it._id});event.stopPropagation()">✕</button></td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `<table class="wl-table">
+    <thead><tr>
+      <th class="wl-th">Ticker</th><th class="wl-th">Expiry</th><th class="wl-th">Type</th>
+      <th class="wl-th">Strike</th><th class="wl-th"></th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+// Auto-prune every 5 min so items expiring today clear themselves at 6 PM ET
+setInterval(() => { if (document.getElementById('optionWatchlist')) renderOptionWatchlist(); }, 300000);
+function tradeWatchItem(id) {
+  const it = getOptionWatchlist().find(x => x._id === id);
+  if (!it) return;
+  const lc = document.getElementById('ladderContracts');
+  if (lc) lc.value = it.quantity || 1;
+  document.querySelectorAll('.wl-item').forEach(e => e.classList.remove('wl-selected'));
+  const node = document.getElementById('wl-' + id);
+  if (node) node.classList.add('wl-selected');
+  const isOpt = it._tab === 'options' || (it.option_type && it.strike);
+  const dirColor = it.direction === 'BUY' ? 'var(--green)' : 'var(--red)';
+  const sub = isOpt
+    ? `${it.option_type || ''}${it.strike ? ' $' + it.strike : ''}${it.expiry ? ' · exp ' + it.expiry : ''}`
+    : 'Equity';
+  const buyDir = it.direction || 'BUY';
+  const buyOpt = it.option_type || 'CALL';
+  const domHtml = isOpt ? buildDomHtml(it.ticker, parseFloat(it.strike) || 0, it.option_type || 'CALL', it.expiry || '') : '';
+  document.getElementById('ladderView').innerHTML = `
+    <div class="ladder-buy" style="margin-top:0;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-weight:800;font-size:14px">${escHtml(it.ticker)}</span>
+        <span style="color:${dirColor};font-weight:700;font-size:13px">${it.direction}</span>
+        <span style="color:var(--muted);font-size:12px">${buyOpt} · $${it.strike || '—'} · ${it.expiry || '—'}</span>
+        <span style="margin-left:auto;color:var(--muted);font-size:11px">qty ${it.quantity || 1}</span>
+      </div>
+      <div class="lb-grid" style="grid-template-columns:1fr 1fr 1fr 1fr">
+        <div class="lb-field">
+          <label>Direction</label>
+          <select id="lb-dir">
+            <option value="BUY" ${buyDir==='BUY'?'selected':''}>BUY</option>
+            <option value="SELL" ${buyDir==='SELL'?'selected':''}>SELL</option>
+          </select>
+        </div>
+        <div class="lb-field">
+          <label>Expiry</label>
+          <input id="lb-expiry" type="date" value="${it.expiry || ''}">
+        </div>
+        <div class="lb-field">
+          <label>Qty</label>
+          <input id="lb-qty" type="number" min="1" value="${it.quantity || 1}">
+        </div>
+        <div class="lb-field">
+          <label>Order</label>
+          <select id="lb-order-type" onchange="toggleLbLimitPrice()">
+            <option value="market">Market</option>
+            <option value="limit">Limit</option>
+          </select>
+        </div>
+      </div>
+      <input type="hidden" id="lb-type" value="${buyOpt}">
+      <input type="hidden" id="lb-strike" value="${it.strike || ''}">
+      <div id="lb-limit-row" class="lb-limit-wrap" style="display:none">
+        <div class="lb-field">
+          <label>Limit $</label>
+          <input id="lb-limit-price" type="number" step="0.01" min="0.01" placeholder="e.g. 4.50">
+        </div>
+      </div>
+      <button class="ladder-buy-submit" onclick="submitLadderBuy('${escHtml(it.ticker)}')">Publish &amp; Execute</button>
+      <div id="lb-msg" style="font-size:12px;margin-top:6px;min-height:14px"></div>
+    </div>
+    ${domHtml}`;
+  // Start live IBKR Level 2 polling for this contract
+  if (isOpt && it.ticker && it.expiry && it.strike) {
+    const right = (it.option_type || 'CALL') === 'PUT' ? 'P' : 'C';
+    stopDom();
+    startDom(it.ticker, it.expiry, parseFloat(it.strike), right);
+  }
+}
+
+function generateDummyOptionDOM(ticker, strike, optType, expiry) {
+  // Deterministic pseudo-RNG seeded from params so DOM is stable per item
+  let h = (ticker + strike + optType + expiry).split('').reduce((a, c) => ((a * 31 + c.charCodeAt(0)) | 0), 7);
+  const rng = (min, max) => { h = (h * 1664525 + 1013904223) | 0; return min + ((h >>> 0) % (max - min + 1)); };
+
+  // Realistic premium: intrinsic (0 if OTM) + time value
+  // We don't know live underlying, so we model it as a near-ATM option ($2–6 range)
+  const baseMid = (2.5 + rng(0, 350) / 100);           // $2.50 – $6.00
+  const STEP = 0.05;
+  // Align bid/ask to nickel grid; spread = $0.10 (typical liquid SPY option)
+  const bestBid = +(Math.round((baseMid - 0.05) / STEP) * STEP).toFixed(2);
+  const bestAsk = +(bestBid + 0.10).toFixed(2);
+  const mid     = +((bestBid + bestAsk) / 2).toFixed(3);
+
+  const levels = [];
+  // Ask levels: 10 rows from bestAsk up to bestAsk+9*STEP (ascending)
+  // We render them top-to-bottom so highest ask is first in the array
+  for (let i = 9; i >= 0; i--) {
+    const price = +(bestAsk + i * STEP).toFixed(2);
+    // Thinner liquidity far from market; thick at best ask
+    const size = i === 0 ? rng(200, 800) : rng(20, 400);
+    levels.push({ price: price.toFixed(2), size, side: 'ask' });
+  }
+  // Bid levels: 10 rows from bestBid down
+  for (let i = 0; i < 10; i++) {
+    const price = +(bestBid - i * STEP).toFixed(2);
+    const size = i === 0 ? rng(200, 900) : rng(20, 450);
+    levels.push({ price: price.toFixed(2), size, side: 'bid' });
+  }
+  return { levels, bestBid: bestBid.toFixed(2), bestAsk: bestAsk.toFixed(2), mid: mid.toFixed(2) };
+}
+
+function buildDomHtml(ticker, strike, optType, expiry) {
+  // Returns the live DOM shell — startDom() fills in real IBKR Level 2 data
+  return `<div class="dom-wrap" id="domPanel">
+    <div class="dom-header">
+      <span class="dom-label-bid">BID</span>
+      <span class="dom-label-mid" id="domMeta">${escHtml(ticker)} ${optType} $${strike} · ${expiry} <button class="dom-refresh-btn" onclick="refreshDom(event)">↻</button></span>
+      <span class="dom-label-ask">ASK</span>
+    </div>
+    <div class="dom-scroll" id="domScroll">
+      <table class="dom-table" id="domTable">
+        <tr><td colspan="3" class="dom-spread" style="text-align:center;padding:18px">
+          <span style="opacity:.5">⏳ Connecting to IBKR Gateway…</span>
+        </td></tr>
+      </table>
+    </div>
+    <div class="dom-action-row" id="domActionRow">
+      <button class="dom-buy-btn" onclick="document.getElementById('lb-dir').value='BUY'">▲ Buy</button>
+      <button class="dom-sell-btn" onclick="document.getElementById('lb-dir').value='SELL'">▼ Sell</button>
+    </div>
+  </div>`;
+}
+
+function setLadderPrice(price) {
+  // Clicking a DOM row pre-fills the limit price concept (visual only for now)
+  const el = document.querySelector('.dom-price-cell.selected');
+  if (el) el.classList.remove('selected');
+}
+
+function refreshDom(e) {
+  e.stopPropagation();
+  // Re-render by re-triggering the selected watchlist item
+  const sel = document.querySelector('.wl-item.wl-selected');
+  if (!sel) return;
+  const id = parseInt(sel.id.replace('wl-', ''));
+  if (!isNaN(id)) tradeWatchItem(id);
+}
+
+function toggleLbLimitPrice() {
+  const sel = document.getElementById('lb-order-type');
+  const row = document.getElementById('lb-limit-row');
+  if (sel && row) row.style.display = sel.value === 'limit' ? '' : 'none';
+}
+
+async function submitLadderBuy(ticker) {
+  const dir = document.getElementById('lb-dir').value;
+  const optType = document.getElementById('lb-type').value;
+  const strike = parseFloat(document.getElementById('lb-strike').value);
+  const expiry = document.getElementById('lb-expiry').value;
+  const qty = parseInt(document.getElementById('lb-qty').value) || 1;
+  const orderType = (document.getElementById('lb-order-type') || {}).value || 'market';
+  const limitPriceRaw = (document.getElementById('lb-limit-price') || {}).value;
+  const limitPrice = orderType === 'limit' ? parseFloat(limitPriceRaw) : null;
+  // For market orders, attach DOM mid as a fallback price so the engine can
+  // retry as a limit GTC if the brokerage rejects market orders after hours.
+  const fallbackMid = (orderType === 'market' && currentDomMid) ? currentDomMid : null;
+  const msg = document.getElementById('lb-msg');
+  if (!strike || !expiry) { msg.style.color='var(--red)'; msg.textContent='Strike and expiry are required.'; return; }
+  if (orderType === 'limit' && (!limitPrice || limitPrice <= 0)) { msg.style.color='var(--red)'; msg.textContent='Enter a valid limit price.'; return; }
+  msg.style.color='var(--muted)'; msg.textContent='Publishing…';
+  const btn = document.querySelector('.ladder-buy-submit');
+  if (btn) btn.disabled = true;
+  try {
+    const priceHint = limitPrice || fallbackMid || null;
+    const payload = { ticker, direction: dir, option_type: optType, strike, expiry, quantity: qty,
+      ...(priceHint ? { price_at_signal: priceHint } : {}), extended_hours: true };
+    const r = await apiFetch('/api/signals/post/', { method:'POST', body: JSON.stringify(payload) });
+    const data = await r.json();
+    if (!r.ok) { msg.style.color='var(--red)'; msg.textContent = data.detail || data.error || JSON.stringify(data); return; }
+    const exec = data.execution || {};
+    if (exec.status === 'rejected') {
+      msg.style.color = 'var(--red)';
+      msg.textContent = exec.error || 'Order rejected by broker.';
+      showToast('Order rejected');
+    } else {
+      msg.style.color = 'var(--green)';
+      msg.textContent = exec.status ? `Published & executed ✓ (${exec.status})` : 'Published ✓';
+      showToast('Trade placed successfully');
+    }
+    loadMySignals();
+  } catch(e) { msg.style.color='var(--red)'; msg.textContent='Error: ' + e.message; }
+  finally { if (btn) btn.disabled = false; }
+}
+
+const QUICK_TICKERS = ['SPY', 'QQQ', 'AAPL', 'NVDA', 'TSLA', 'MSFT', 'AMZN', 'META', 'GOOGL', 'AMD'];
+function renderTickerChips() {
+  const el = document.getElementById('tickerChips');
+  if (!el) return;
+  const current = (document.getElementById('sigTicker').value || '').trim().toUpperCase();
+  const watch = getWatchlist();
+  const watchHtml = watch.map(t =>
+    `<button type="button" class="ticker-chip watch-chip ${t === current ? 'active' : ''}" onclick="pickTicker('${t}')">★ ${t}<span class="wc-x" onclick="removeFromWatchlist('${t}',event)">✕</span></button>`
+  ).join('');
+  const maxQuick = Math.max(0, 6 - watch.length); // show up to 6 total chips
+  const quickHtml = QUICK_TICKERS.filter(t => !watch.includes(t)).slice(0, maxQuick).map(t =>
+    `<button type="button" class="ticker-chip ${t === current ? 'active' : ''}" onclick="pickTicker('${t}')">${t}</button>`
+  ).join('');
+  el.innerHTML = watchHtml + quickHtml;
+}
+function pickTicker(t) {
+  document.getElementById('sigTicker').value = t;
+  renderTickerChips();
+  fetchQuote(t);
+}
+
+let tickerTimer;
+function onTickerChange() {
+  clearTimeout(tickerTimer);
+  const ticker = document.getElementById('sigTicker').value.trim().toUpperCase();
+  renderTickerChips();
+  chainData = null;
+  stopDom();
+  if (ticker.length < 1) {
+    document.getElementById('quoteCard').innerHTML = '';
+    document.getElementById('optionsChainWrap').classList.add('hidden');
+    const rph2 = document.getElementById('ladderRightPlaceholder');
+    if (rph2) rph2.style.display = '';
+    return;
+  }
+  tickerTimer = setTimeout(() => fetchQuote(ticker), 500);
+}
+async function fetchQuote(ticker) {
+  const r = await apiFetch(`/api/brokers/quote/${ticker}/`);
+  if (!r || !r.ok) { document.getElementById('quoteCard').innerHTML = ''; return; }
+  const q = await r.json();
+  currentQuote = q;
+  const up = (q.change_pct >= 0);
+  const arrow = up ? '▲' : '▼';
+  const changeClass = up ? 'quote-change-up' : 'quote-change-down';
+  document.getElementById('quoteCard').innerHTML = `<div class="quote-card">
+    <div class="quote-row">
+      <div class="quote-left">
+        <div class="qname">${escHtml(q.name || q.ticker)}</div>
+        <div class="quote-price">${usdFmt(q.price)}</div>
+        <div class="${changeClass}">${arrow} ${q.change_pct}%</div>
+      </div>
+      <div class="quote-right">
+        <button class="quote-action" onclick="useQuotePrice('regular')">Use as price →</button>
+        ${q.after_hours_price ? `<div class="quote-mini">After-hrs: ${usdFmt(q.after_hours_price)}</div><button class="quote-action" onclick="useQuotePrice('after')">Use after-hrs →</button>` : ''}
+      </div>
+    </div>
+    ${(q.open || q.high || q.low || q.volume) ? `<div class="quote-meta">
+      ${q.open ? `<div>Open<strong>${usdFmt(q.open)}</strong></div>` : ''}
+      ${q.high ? `<div>High<strong>${usdFmt(q.high)}</strong></div>` : ''}
+      ${q.low ? `<div>Low<strong>${usdFmt(q.low)}</strong></div>` : ''}
+      ${q.volume ? `<div>Vol<strong>${Number(q.volume).toLocaleString()}</strong></div>` : ''}
+    </div>` : ''}
+  </div>`;
+  if (signalFormTab === 'equity' && !document.getElementById('sigEqPrice').value) {
+    document.getElementById('sigEqPrice').value = (parseFloat(q.price) * 0.8).toFixed(2);
+  }
+  if (signalFormTab === 'options') fetchOptionsChain(ticker);
+}
+
+/* ---- Options ladder ---- */
+let chainData = null;
+async function fetchOptionsChain(ticker, expiry) {
+  const wrap = document.getElementById('optionsChainWrap');
+  const meta = document.getElementById('chainMeta');
+  meta.textContent = 'Loading chain…';
+  wrap.classList.remove('hidden');
+  const rph = document.getElementById('ladderRightPlaceholder');
+  if (rph) rph.style.display = 'none';
+  const qs = expiry ? `?expiry=${expiry}` : '';
+  const r = await apiFetch(`/api/brokers/options-chain/${ticker}/${qs}`);
+  if (!r || !r.ok) {
+    const d = r ? await r.json().catch(()=>({})) : {};
+    meta.textContent = d.error || 'No options data';
+    document.getElementById('ladderTable').innerHTML = '';
+    return;
+  }
+  chainData = await r.json();
+  // populate expiry dropdown — only show today or future dates
+  const sel = document.getElementById('sigExpiry');
+  const et0 = nowET();
+  const todayStr = `${et0.getFullYear()}-${String(et0.getMonth()+1).padStart(2,'0')}-${String(et0.getDate()).padStart(2,'0')}`;
+  const validExpiries = (chainData.expiries || []).filter(e => e >= todayStr);
+  if (!validExpiries.length && chainData.expiries && chainData.expiries.length) validExpiries.push(...chainData.expiries.slice(0,3));
+  sel.innerHTML = validExpiries.map(e => `<option value="${e}" ${e===chainData.expiry?'selected':''}>${e}</option>`).join('');
+  // If default expiry was filtered out, pick the first valid one
+  if (!sel.value || sel.value < todayStr) sel.value = validExpiries[0] || '';
+  meta.textContent = `${chainData.ticker} · underlying ${chainData.underlying_price ? usdFmt(chainData.underlying_price) : '—'} · ${chainData.ladder.length} strikes`;
+  renderLadder();
+}
+function toggleChainBody() {
+  const body = document.getElementById('chainBody');
+  const btn = document.getElementById('chainToggleBtn');
+  if (!body || !btn) return;
+  const collapsed = body.classList.toggle('hidden');
+  btn.textContent = collapsed ? '▼ expand' : '▲ collapse';
+}
+function onExpiryChange() {
+  const ticker = document.getElementById('sigTicker').value.trim().toUpperCase();
+  const expiry = document.getElementById('sigExpiry').value;
+  if (ticker && expiry) fetchOptionsChain(ticker, expiry);
+}
+function renderLadder() {
+  if (!chainData) return;
+  const u = parseFloat(chainData.underlying_price) || 0;
+  // find ATM strike (closest to underlying)
+  let atmStrike = null, atmDiff = Infinity, atmIdx = 0;
+  chainData.ladder.forEach((row, i) => {
+    const d = Math.abs(row.strike - u);
+    if (d < atmDiff) { atmDiff = d; atmStrike = row.strike; atmIdx = i; }
+  });
+  // Show only 10 strikes above and 10 below the ATM
+  const visibleLadder = chainData.ladder.slice(Math.max(0, atmIdx - 10), atmIdx + 11);
+  const cell = v => (v === null || v === undefined) ? '<span class="ladder-dim">—</span>' : v;
+  const px = v => (v === null || v === undefined || v === 0) ? '<span class="ladder-dim">—</span>' : parseFloat(v).toFixed(2);
+  const head = `<thead><tr>
+    <th>IV</th><th>Vol</th><th>Bid</th><th>Ask</th>
+    <th>Strike</th>
+    <th>Bid</th><th>Ask</th><th>Vol</th><th>IV</th>
+  </tr></thead>`;
+  const rows = visibleLadder.map(row => {
+    const c = row.call, p = row.put;
+    const isATM = row.strike === atmStrike;
+    const callMid = c && c.bid && c.ask ? ((c.bid + c.ask) / 2) : (c && c.last) || null;
+    const putMid  = p && p.bid && p.ask ? ((p.bid + p.ask) / 2) : (p && p.last) || null;
+    const itmC = c && row.strike < u ? 'ladder-itm-c' : '';
+    const itmP = p && row.strike > u ? 'ladder-itm-p' : '';
+    const cMidS = callMid !== null ? callMid : 'null';
+    const pMidS = putMid  !== null ? putMid  : 'null';
+    return `<tr class="ladder-row ${isATM?'atm':''}" onclick="pickStrikeRow(event,${row.strike},${cMidS},${pMidS})">
+      <td class="ladder-call ${itmC}">${c?cell(c.iv?c.iv+'%':null):'<span class=ladder-dim>—</span>'}</td>
+      <td class="ladder-call ${itmC}">${c?cell(c.volume||null):'<span class=ladder-dim>—</span>'}</td>
+      <td class="ladder-call ${itmC} ladder-px">${c?px(c.bid):'<span class=ladder-dim>—</span>'}</td>
+      <td class="ladder-call ${itmC} ladder-px">${c?px(c.ask):'<span class=ladder-dim>—</span>'}</td>
+      <td class="ladder-strike">${row.strike}</td>
+      <td class="ladder-put ${itmP} ladder-px">${p?px(p.bid):'<span class=ladder-dim>—</span>'}</td>
+      <td class="ladder-put ${itmP} ladder-px">${p?px(p.ask):'<span class=ladder-dim>—</span>'}</td>
+      <td class="ladder-put ${itmP}">${p?cell(p.volume||null):'<span class=ladder-dim>—</span>'}</td>
+      <td class="ladder-put ${itmP}">${p?cell(p.iv?p.iv+'%':null):'<span class=ladder-dim>—</span>'}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('ladderTable').innerHTML = head + '<tbody>' + rows + '</tbody>';
+  updateLadderMode();
+  // scroll ATM into view
+  const atmEl = document.querySelector('.ladder-row.atm');
+  if (atmEl) atmEl.scrollIntoView({ block: 'center' });
+}
+function pickStrikeRow(e, strike, callMid, putMid) {
+  // Don't trigger if clicking inside the trade bar itself
+  if (e.target.closest('tr.ladder-trade-bar') || e.target.closest('.ltr-inner')) return;
+
+  const td = e.target.closest('td');
+  let type, mid;
+  if (td && td.classList.contains('ladder-put')) {
+    type = 'PUT'; mid = putMid;
+  } else if (td && td.classList.contains('ladder-call')) {
+    type = 'CALL'; mid = callMid;
+  } else {
+    // Strike column — pick both, show both in bar
+    type = null; mid = null;
+  }
+
+  // Fill form fields
+  if (type) {
+    pickStrike(type, strike, mid);
+  } else {
+    document.getElementById('sigStrike').value = strike;
+  }
+
+  // Show inline trade bar below this row
+  showLadderTradeBar(e.target.closest('tr'), strike, callMid, putMid, type);
+}
+
+function showLadderTradeBar(row, strike, callMid, putMid, sideHint) {
+  // Remove any existing trade bar
+  document.querySelectorAll('tr.ladder-trade-bar').forEach(r => r.remove());
+  document.querySelectorAll('.ladder-row.trade-open').forEach(r => r.classList.remove('trade-open'));
+  if (!row) return;
+
+  row.classList.add('trade-open');
+  const ticker  = document.getElementById('sigTicker').value.trim().toUpperCase();
+  const expiry  = document.getElementById('sigExpiry').value;
+  const qty     = parseInt(document.getElementById('sigOptQty').value) || 1;
+  const fmtP    = v => (v !== null && v !== undefined) ? '$' + parseFloat(v).toFixed(2) : '—';
+
+  // Build bar HTML — show call and put prices side by side
+  const callLabel = callMid !== null ? `CALL ${fmtP(callMid)}` : 'CALL —';
+  const putLabel  = putMid  !== null ? `PUT ${fmtP(putMid)}`   : 'PUT —';
+  const colSpan   = row.cells.length || 9;
+
+  const bar = document.createElement('tr');
+  bar.className = 'ladder-trade-bar visible';
+  bar.innerHTML = `<td colspan="${colSpan}">
+    <div class="ltr-inner">
+      <span class="ltr-label">Strike ${strike} · ${expiry || '?'} · ${qty} contract${qty>1?'s':''}</span>
+      <button class="ltr-btn ltr-btn-buy"  onclick="quickTrade('BUY','CALL',${strike},${callMid??'null'},'${ticker}','${expiry}')">▲ Buy ${callLabel}</button>
+      <button class="ltr-btn ltr-btn-buy"  style="background:var(--indigo)" onclick="quickTrade('BUY','PUT',${strike},${putMid??'null'},'${ticker}','${expiry}')">▼ Buy ${putLabel}</button>
+      <button class="ltr-btn ltr-btn-sell" onclick="quickTrade('SELL','CALL',${strike},${callMid??'null'},'${ticker}','${expiry}')">Sell Call</button>
+      <button class="ltr-btn ltr-btn-sell" style="background:var(--red-soft);color:var(--red)" onclick="quickTrade('SELL','PUT',${strike},${putMid??'null'},'${ticker}','${expiry}')">Sell Put</button>
+      <button class="ltr-btn ltr-btn-wl"   onclick="quickWatchlist('${ticker}',${strike},'${expiry}')">★ Watch</button>
+      <button class="ltr-close"            onclick="closeLadderTradeBar()">✕</button>
+    </div>
+  </td>`;
+  row.insertAdjacentElement('afterend', bar);
+}
+
+function closeLadderTradeBar() {
+  document.querySelectorAll('tr.ladder-trade-bar').forEach(r => r.remove());
+  document.querySelectorAll('.ladder-row.trade-open').forEach(r => r.classList.remove('trade-open'));
+}
+
+function quickTrade(direction, optType, strike, premium, ticker, expiry) {
+  // 1. Pre-fill the main form
+  setDirection(direction);
+  setOptType(optType);
+  document.getElementById('sigTicker').value = ticker;
+  document.getElementById('sigStrike').value = strike;
+  const sel = document.getElementById('sigExpiry');
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === expiry) { sel.selectedIndex = i; break; }
+  }
+  if (premium !== null && premium !== undefined) {
+    const p = document.getElementById('sigPremium');
+    if (p) p.value = parseFloat(premium).toFixed(2);
+  }
+  closeLadderTradeBar();
+
+  // 2. Open DOM ladder in ladderView (row 2 right panel)
+  const lv = document.getElementById('ladderView');
+  if (!lv) return;
+  const dirColor = direction === 'BUY' ? 'var(--green)' : 'var(--red)';
+  const premStr = premium !== null && premium !== undefined ? ' @ $' + parseFloat(premium).toFixed(2) : '';
+  const domHtml = buildDomHtml(ticker, parseFloat(strike), optType, expiry);
+  lv.innerHTML = `
+    <div class="wl-item wl-selected" style="margin-bottom:10px;background:var(--hover)">
+      <div class="wl-item-title">
+        <span style="color:${dirColor};font-weight:800">${direction}</span>
+        ${escHtml(ticker)} ${optType} $${strike}${premStr}
+      </div>
+      <div class="wl-item-sub">${expiry} · ${document.getElementById('sigOptQty').value || 1} contract(s)</div>
+    </div>
+    ${domHtml}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+      <button class="tos-btn ${direction==='BUY'?'tos-buy-ask':'tos-sell-bid'}" style="padding:12px;font-size:13px"
+        onclick="setDirection('${direction}');setOptType('${optType}');openConfirmModal()">
+        ${direction} ${optType}${premStr}
+      </button>
+      <button class="tos-btn" style="background:var(--hover);color:var(--muted);border:1px solid var(--border)"
+        onclick="document.getElementById('ladderView').innerHTML='<div class=\\'ladder-placeholder\\'>Click any watchlist item to open its ladder here.</div>'">
+        Cancel
+      </button>
+    </div>`;
+
+  // 3. Ensure row 2 is expanded and scroll into view
+  const row2 = document.getElementById('twRow2');
+  if (row2 && row2.classList.contains('collapsed')) toggleTwRow('twRow2','twBtn2');
+  lv.closest('.panel') && lv.closest('.panel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+
+  // 4. Start live IBKR Level 2 polling for this contract
+  stopDom();
+  startDom(ticker, expiry, parseFloat(strike), optType === 'PUT' ? 'P' : 'C');
+}
+
+function quickWatchlist(ticker, strike, expiry) {
+  document.getElementById('sigTicker').value = ticker;
+  document.getElementById('sigStrike').value = strike;
+  const sel = document.getElementById('sigExpiry');
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === expiry) { sel.selectedIndex = i; break; }
+  }
+  closeLadderTradeBar();
+  addOptionToWatchlist();
+}
+function pickStrike(type, strike, premium) {
+  setOptType(type);
+  document.getElementById('sigStrike').value = strike;
+  const premEl = document.getElementById('sigPremium');
+  if (premEl && premium !== null && premium !== undefined && premium !== '') {
+    premEl.value = parseFloat(premium).toFixed(2);
+  }
+  // Highlight the selected row
+  document.querySelectorAll('.ladder-row.selected').forEach(r => r.classList.remove('selected'));
+  try {
+    const row = event && event.target && event.target.closest('.ladder-row');
+    if (row) row.classList.add('selected');
+  } catch (e) { /* no event context */ }
+  showToast(`${type} ${strike} selected${premium ? ' @ ' + parseFloat(premium).toFixed(2) : ''}`);
+  // open Depth of Market for the chosen contract
+  const ticker = document.getElementById('sigTicker').value.trim().toUpperCase();
+  const expiry = document.getElementById('sigExpiry').value;
+  startDom(ticker, expiry, strike, type[0]);
+}
+
+/* ---- Depth of Market ---- */
+let domState = { key: null, tab: 'ibkr', timer: null };
+function switchDomTab(which) {
+  domState.tab = which;
+  document.getElementById('domTabIbkr').classList.toggle('active', which === 'ibkr');
+  document.getElementById('domTabPoly').classList.toggle('active', which === 'polygon');
+  document.getElementById('domIbkr').classList.toggle('hidden', which !== 'ibkr');
+  document.getElementById('domPoly').classList.toggle('hidden', which !== 'polygon');
+}
+function stopDom() {
+  if (domState.timer) { clearInterval(domState.timer); domState.timer = null; }
+  domState.key = null;
+  // domPanel lives inside ladderView (dynamically inserted) — just clear the timer
+}
+function startDom(ticker, expiry, strike, right) {
+  if (!ticker || !expiry || !strike) return;
+  if (domState.timer) clearInterval(domState.timer);
+  domState.key = `${ticker}|${expiry}|${strike}|${right}`;
+  domState.tab = 'ibkr';
+  pollDom(ticker, expiry, strike, right);
+  domState.timer = setInterval(() => pollDom(ticker, expiry, strike, right), 2000);
+}
+async function pollDom(ticker, expiry, strike, right) {
+  if (domState.tab !== 'ibkr') return;
+  if (!token) { stopDom(); return; }
+  const tbl = document.getElementById('domTable');
+  if (!tbl) { stopDom(); return; }
+  const r = await apiFetch(`/api/brokers/dom/${ticker}/?expiry=${expiry}&strike=${strike}&right=${right}`);
+  if (!r) { stopDom(); return; } // 401 — logged out
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    // IBKR offline — fall back to deterministic dummy data
+    const optType = right === 'P' ? 'PUT' : 'CALL';
+    const dummy = generateDummyOptionDOM(ticker, parseFloat(strike), optType, expiry);
+    currentDomMid = parseFloat(dummy.mid);
+    renderDom({
+      bids: dummy.levels.filter(l => l.side === 'bid').map(l => ({price: l.price, size: l.size})),
+      asks: dummy.levels.filter(l => l.side === 'ask').map(l => ({price: l.price, size: l.size})),
+    });
+    return;
+  }
+  renderDom(d);
+}
+function domRow(side, lvl, maxSize) {
+  const pct = Math.max(3, Math.round((lvl.size / maxSize) * 100));
+  return `<tr class="dom-${side}">
+    <td class="dom-price">${parseFloat(lvl.price).toFixed(2)}</td>
+    <td class="dom-size">${Math.round(lvl.size).toLocaleString()}</td>
+    <td class="dom-bar-cell"><div class="dom-bar" style="width:${pct}%"></div></td>
+  </tr>`;
+}
+function renderDom(d) {
+  const tbl = document.getElementById('domTable');
+  if (!tbl) return;
+  const bids = d.bids || [], asks = d.asks || [];
+  if (!bids.length && !asks.length) {
+    tbl.innerHTML = '<tr><td colspan="3" class="dom-spread" style="text-align:center">No resting orders — market closed or no depth on this contract</td></tr>';
+    return;
+  }
+  const maxSize = Math.max(1, ...bids.concat(asks).map(l => l.size || 0));
+  const askRows = asks.slice().reverse().map(l => domRow('ask', l, maxSize)).join('');
+  const bidRows = bids.map(l => domRow('bid', l, maxSize)).join('');
+  const bb = bids[0] ? parseFloat(bids[0].price) : null;
+  const ba = asks[0] ? parseFloat(asks[0].price) : null;
+  const spread = (bb != null && ba != null) ? `spread  $${(ba - bb).toFixed(2)}` : 'inside market';
+  const mid = (bb != null && ba != null) ? ((bb + ba) / 2) : null;
+  tbl.innerHTML = askRows + `<tr><td colspan="3" class="dom-spread">${spread}${mid ? `&nbsp;·&nbsp;mid $${mid.toFixed(2)}` : ''}</td></tr>` + bidRows;
+  // Update live mid price for after-hours limit fallback
+  if (mid) currentDomMid = mid;
+  // Update action row buttons with real bid/ask
+  const ar = document.getElementById('domActionRow');
+  if (ar) {
+    ar.innerHTML = `
+      <button class="dom-buy-btn" onclick="document.getElementById('lb-dir').value='BUY';document.getElementById('lb-order-type').value='limit';document.getElementById('lb-limit-price').value='${ba ?? ''}';toggleLbLimitPrice()">▲ Buy Ask${ba != null ? ' $'+ba.toFixed(2) : ''}</button>
+      <button class="dom-sell-btn" onclick="document.getElementById('lb-dir').value='SELL';document.getElementById('lb-order-type').value='limit';document.getElementById('lb-limit-price').value='${bb ?? ''}';toggleLbLimitPrice()">▼ Sell Bid${bb != null ? ' $'+bb.toFixed(2) : ''}</button>`;
+  }
+}
+function useQuotePrice(which) {
+  if (!currentQuote) return;
+  const price = which === 'after' ? currentQuote.after_hours_price : currentQuote.price;
+  if (signalFormTab === 'equity') document.getElementById('sigEqPrice').value = parseFloat(price).toFixed(2);
+  else document.getElementById('sigPremium').value = parseFloat(price).toFixed(2);
+}
+
+function _getFormValues() {
+  const base = {
+    ticker: document.getElementById('sigTicker').value.trim().toUpperCase(),
+    direction: signalDirection,
+    extended_hours: document.getElementById('sigExtendedHours').checked,
+  };
+  if (signalFormTab === 'options') {
+    return { ...base,
+      quantity: parseInt(document.getElementById('sigOptQty').value) || 1,
+      strike: parseFloat(document.getElementById('sigStrike').value) || null,
+      expiry: document.getElementById('sigExpiry').value || null,
+      option_type: signalOptType,
+      price_at_signal: parseFloat(document.getElementById('sigPremium').value) || null,
+    };
+  } else {
+    return { ...base,
+      quantity: parseInt(document.getElementById('sigEqQty').value) || 1,
+      price_at_signal: parseFloat(document.getElementById('sigEqPrice').value) || null,
+      option_type: '',
+    };
+  }
+}
+
+function openConfirmModal() {
+  const v = _getFormValues();
+  if (!v.ticker) { document.getElementById('publishError').textContent = 'Ticker required.'; return; }
+  document.getElementById('publishError').textContent = '';
+  confirmPayload = v;
+  const isBuy = v.direction === 'BUY';
+  const hero = document.getElementById('confirmHero');
+  hero.className = `confirm-hero ${isBuy ? 'buy' : 'sell'}`;
+  document.getElementById('confirmPill').className = `confirm-pill ${isBuy ? 'buy' : 'sell'}`;
+  document.getElementById('confirmPill').textContent = v.direction;
+  document.getElementById('confirmTicker').textContent = v.ticker;
+  let sub = '', body = '';
+  if (signalFormTab === 'options') {
+    const shares = v.quantity * 100;
+    sub = `Options · ${signalOptType} · ${v.quantity} contract${v.quantity > 1 ? 's' : ''}`;
+    body = `
+      <div class="confirm-row"><span class="label">Type</span><span class="value">${signalOptType}</span></div>
+      <div class="confirm-row"><span class="label">Contracts</span><span class="value">${v.quantity} × 100 = ${shares} shares</span></div>
+      ${v.strike ? `<div class="confirm-row"><span class="label">Strike</span><span class="value">${usdFmt(v.strike)}</span></div>` : ''}
+      ${v.expiry ? `<div class="confirm-row"><span class="label">Expiry</span><span class="value">${v.expiry}</span></div>` : ''}
+      ${v.price_at_signal ? `<div class="confirm-row"><span class="label">Premium</span><span class="value">${usdFmt(v.price_at_signal)}</span></div>` : ''}
+      ${(v.strike && v.price_at_signal) ? `<div class="confirm-be">Break-even: ${usdFmt(parseFloat(v.strike) + (signalOptType === 'CALL' ? parseFloat(v.price_at_signal) : -parseFloat(v.price_at_signal)))}</div>` : ''}
+      ${v.extended_hours ? '<div class="confirm-ext">⚡ Extended hours order (sent as GTC)</div>' : ''}
+    `;
+  } else {
+    sub = `Equity · ${v.quantity} share${v.quantity > 1 ? 's' : ''}`;
+    body = `
+      <div class="confirm-row"><span class="label">Shares</span><span class="value">${v.quantity}</span></div>
+      ${v.price_at_signal ? `<div class="confirm-row"><span class="label">Limit price</span><span class="value">${usdFmt(v.price_at_signal)}</span></div><div class="confirm-row"><span class="label">Est. cost</span><span class="value">${usdFmt(v.quantity * v.price_at_signal)}</span></div>` : ''}
+      ${v.extended_hours ? '<div class="confirm-ext">⚡ Extended hours order (sent as GTC)</div>' : ''}
+    `;
+  }
+  document.getElementById('confirmSub').textContent = sub;
+  document.getElementById('confirmBody').innerHTML = body;
+  const cBtn = document.getElementById('confirmBtn');
+  cBtn.className = `confirm-btn-primary ${isBuy ? 'buy' : 'sell'}`;
+  cBtn.textContent = 'Confirm & Publish';
+  cBtn.disabled = false;
+  document.getElementById('confirmModal').classList.remove('hidden');
+}
+function closeConfirmModal() { document.getElementById('confirmModal').classList.add('hidden'); }
+
+async function confirmPublish() {
+  if (!confirmPayload) return;
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled = true; btn.textContent = 'Publishing…';
+  const r = await apiFetch('/api/signals/post/', { method:'POST', body: JSON.stringify(confirmPayload) });
+  if (!r || !r.ok) {
+    const d = r ? await r.json() : {};
+    showToast('Failed: ' + (d.error || JSON.stringify(d).substring(0,80)));
+    btn.disabled = false; btn.textContent = 'Confirm & Publish';
+    return;
+  }
+  showToast('Signal published');
+  closeConfirmModal();
+  loadMySignals();
+}
+
+async function loadMySignals() {
+  const el = document.getElementById('mySignalsList');
+  if (!el) return;
+
+  // Fetch live broker orders + internal signals in parallel
+  const [ordersR, sigsR] = await Promise.all([
+    apiFetch('/api/brokers/live-orders/'),
+    apiFetch('/api/traders/me/signals/'),
+  ]);
+
+  const dfmt = (iso) => iso ? new Date(iso).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '—';
+  let rows = [];
+
+  // Broker live orders (source of truth)
+  if (ordersR && ordersR.ok) {
+    const orders = await ordersR.json();
+    if (Array.isArray(orders) && orders.length) {
+      const statusLabel = { ACCEPTED:'Pending', PENDING:'Pending', PARTIALLY_FILLED:'Part. Filled',
+        EXECUTED:'Filled', EXPIRED:'Expired', CANCELED:'Canceled', REJECTED:'Rejected' };
+      const statusCls = { ACCEPTED:'pending', PENDING:'pending', PARTIALLY_FILLED:'pending',
+        EXECUTED:'open', EXPIRED:'closed', CANCELED:'closed', REJECTED:'closed' };
+      rows = orders.slice(0, 50).map(o => {
+        const dirCls = o.action === 'BUY' ? 'side-buy' : 'side-sell';
+        const optBadge = o.is_option
+          ? `<span class="opt-badge ${(o.option_type||'').toLowerCase()}">${o.option_type}</span>`
+          : '<span style="color:var(--muted);font-size:11px">EQT</span>';
+        const strikeExp = o.is_option
+          ? `$${o.strike} · <span style="color:var(--muted)">${(o.expiry||'').slice(5)}</span>` : '—';
+        const priceTxt = o.fill_price && o.fill_price > 0
+          ? `<span style="color:var(--green)">$${o.fill_price.toFixed(2)}</span>`
+          : o.limit_price ? `<span style="color:var(--muted)">LMT $${o.limit_price.toFixed(2)}</span>` : '—';
+        const qtyTxt = o.filled_quantity > 0
+          ? `${o.filled_quantity}/${o.total_quantity}` : `${o.total_quantity}`;
+        const sc = statusCls[o.status] || 'pending';
+        const sl = statusLabel[o.status] || o.status;
+        return `<tr>
+          <td><span class="ticker-badge">${escHtml(o.ticker||'—')}</span></td>
+          <td><span class="${dirCls}">${o.action}</span></td>
+          <td>${optBadge}</td>
+          <td>${strikeExp}</td>
+          <td>${priceTxt}</td>
+          <td>${qtyTxt}</td>
+          <td>${dfmt(o.placed_at)}</td>
+          <td><span class="trade-status ${sc}">${sl}</span></td>
+        </tr>`;
+      });
+    }
+  }
+
+  // Fall back to internal signals if no broker orders
+  if (!rows.length && sigsR && sigsR.ok) {
+    const sigs = await sigsR.json();
+    rows = sigs.slice(0, 50).map(s => {
+      const lc = s.lifecycle || {};
+      const pnlCls = lc.pnl > 0 ? 'cal-pos' : lc.pnl < 0 ? 'cal-neg' : '';
+      const pnlStr = lc.pnl != null ? `${lc.pnl >= 0 ? '+' : ''}$${parseFloat(lc.pnl).toFixed(2)}` : '—';
+      const dirCls = s.direction === 'BUY' ? 'side-buy' : 'side-sell';
+      return `<tr>
+        <td><span class="ticker-badge">${escHtml(s.ticker)}</span></td>
+        <td><span class="${dirCls}">${s.direction}</span></td>
+        <td>${s.option_type || 'EQT'}</td>
+        <td>${s.strike ? '$'+s.strike : '—'}</td>
+        <td>${s.expiry || '—'}</td>
+        <td>${dfmt(s.created_at)}</td>
+        <td><span class="${pnlCls}">${pnlStr}</span></td>
+      </tr>`;
+    });
+  }
+
+  if (!rows.length) { el.innerHTML = '<div class="empty">No trades found.</div>'; return; }
+  el.innerHTML = `<table class="positions-table">
+    <thead><tr>
+      <th>Ticker</th><th>Side</th><th>Type</th><th>Strike · Exp</th><th>Price</th><th>Qty</th><th>Placed</th><th>Status</th>
+    </tr></thead>
+    <tbody>${rows.join('')}</tbody>
+  </table>`;
+}
+let allSignalsData = [];
+async function loadAllMySignals() {
+  const r = await apiFetch('/api/traders/me/signals/');
+  if (!r || !r.ok) return;
+  allSignalsData = await r.json();
+  // Populate ticker filter with distinct tickers
+  const tickers = [...new Set(allSignalsData.map(s => s.ticker))].sort();
+  const tickerSel = document.getElementById('filterTicker');
+  const cur = tickerSel.value;
+  tickerSel.innerHTML = '<option value="">All tickers</option>' +
+    tickers.map(t => `<option value="${escHtml(t)}">${escHtml(t)}</option>`).join('');
+  tickerSel.value = cur;
+  renderFilteredSignals();
+}
+function renderFilteredSignals() {
+  const el = document.getElementById('allMySignals');
+  if (!el) return;
+  const fTicker = document.getElementById('filterTicker').value;
+  const fType = document.getElementById('filterType').value;
+  const fDate = document.getElementById('filterDate').value;
+  const rows = allSignalsData.filter(s => {
+    if (fTicker && s.ticker !== fTicker) return false;
+    if (fType && (s.option_type || '') !== fType) return false;
+    if (fDate) {
+      const d = new Date(s.created_at);
+      const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      if (ds !== fDate) return false;
+    }
+    return true;
+  });
+  document.getElementById('allSignalsCount').textContent = rows.length;
+  if (!rows.length) {
+    el.innerHTML = '<div class="empty">No signals match these filters.</div>';
+    return;
+  }
+  el.innerHTML = rows.map(s => renderSignalRow(s, false)).join('');
+}
+function clearSignalFilters() {
+  document.getElementById('filterTicker').value = '';
+  document.getElementById('filterType').value = '';
+  document.getElementById('filterDate').value = '';
+  renderFilteredSignals();
+}
+function renderSignalRow(s, showCopy = true) {
+  const ex = s.execution;
+  let execBlock = '';
+  if (ex) {
+    if (ex.status === 'submitted' || ex.status === 'filled') {
+      execBlock = `<div class="exec-result ok">
+        <div class="er-row"><strong>✓ ${ex.status === 'filled' ? 'Filled' : 'Submitted'}</strong> <span style="font-size:11px">${ex.broker || ''}</span></div>
+        <div class="er-detail">${ex.order_type}${ex.limit_price?' @ '+ex.limit_price:''}${ex.latency_ms?' · '+ex.latency_ms+'ms':''}${ex.broker_order_id?' · #'+ex.broker_order_id:''}</div>
+      </div>`;
+    } else if (ex.status === 'rejected') {
+      execBlock = `<div class="exec-result error">
+        <div class="er-row"><strong>✗ Rejected by broker</strong> <span style="font-size:11px">${ex.broker || ''}</span></div>
+        ${ex.error?`<div class="er-detail">${escHtml(ex.error)}</div>`:''}
+      </div>`;
+    }
+  }
+  const sigData = encodeURIComponent(JSON.stringify(s));
+  const lc = s.lifecycle;
+  let lifeBlock = '';
+  if (lc) {
+    const statusBadge = lc.status === 'closed'
+      ? '<span class="trade-status closed">Closed</span>'
+      : '<span class="trade-status open">Open</span>';
+    const pnlCls = lc.pnl > 0 ? 'cal-pos' : lc.pnl < 0 ? 'cal-neg' : '';
+    const pnlStr = lc.pnl ? `${lc.pnl >= 0 ? '+' : '−'}$${Math.abs(lc.pnl).toFixed(2)}` : '—';
+    const dfmt = (iso) => iso ? new Date(iso).toLocaleDateString([], {month:'short', day:'numeric'}) : '—';
+    lifeBlock = `<div class="trade-life">
+      <div><span class="tl-label">Trade started</span><span class="tl-val">${dfmt(lc.started)}</span></div>
+      <div><span class="tl-label">Status</span>${statusBadge}</div>
+      <div><span class="tl-label">Trade closed</span><span class="tl-val">${dfmt(lc.closed_at)}</span></div>
+      <div><span class="tl-label">P&L</span><span class="tl-val ${pnlCls}">${pnlStr}</span></div>
+    </div>`;
+  }
+  return `<div class="list-row">
+    <div class="row-head">
+      <div><span class="ticker-badge">${escHtml(s.ticker)}</span> <span class="side-${s.direction.toLowerCase()==='buy'?'buy':'sell'}">${s.direction}</span> ${s.quantity}${s.option_type?` <strong style="color:${s.option_type==='CALL'?'var(--green)':'var(--red)'}">${s.option_type}</strong>`:''}${s.strike?' @'+s.strike:''}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${showCopy ? `<button class="copy-trade-btn" onclick="copySignalToForm('${sigData}')" title="Copy this trade to the publish form">⎘ Copy</button>` : ''}
+        <div style="font-size:11px;color:var(--muted)">${new Date(s.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+      </div>
+    </div>
+    ${s.expiry?`<div style="font-size:11px;color:var(--muted);margin-top:2px">Expiry: ${s.expiry}${s.extended_hours?' · ⚡ Extended hours':''}</div>`:''}
+    ${execBlock}
+    ${lifeBlock}
+  </div>`;
+}
+
+function copySignalToForm(encoded) {
+  const s = JSON.parse(decodeURIComponent(encoded));
+  // Switch to the publish tab
+  switchTraderTab('tr-tab-1');
+  // Detect equity vs options
+  const isOption = !!(s.option_type && s.strike);
+  switchFormTab(isOption ? 'options' : 'equity');
+  // Fill common fields
+  document.getElementById('sigTicker').value = s.ticker || '';
+  renderTickerChips();
+  setDirection(s.direction || 'BUY');
+  // Trigger quote fetch
+  if (s.ticker) fetchQuote(s.ticker);
+  if (isOption) {
+    setOptType(s.option_type);
+    document.getElementById('sigOptQty').value = s.quantity || 1;
+    document.getElementById('sigStrike').value = s.strike || '';
+    document.getElementById('sigExpiry').value = s.expiry || '';
+    document.getElementById('sigPremium').value = s.price_at_signal || '';
+  } else {
+    document.getElementById('sigEqQty').value = s.quantity || 1;
+    document.getElementById('sigEqPrice').value = s.price_at_signal || '';
+  }
+  // Extended hours
+  const ext = document.getElementById('sigExtendedHours');
+  if (ext) ext.checked = !!s.extended_hours;
+  // Scroll to top of form
+  document.getElementById('sigTicker').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  showToast('Copied to form — review and publish');
+}
+
+async function loadAnalytics() {
+  const r = await apiFetch('/api/analytics/trader/');
+  const el = document.getElementById('analyticsContent');
+  if (!r || !r.ok) { el.innerHTML = '<div class="empty">Could not load analytics.</div>'; return; }
+  const a = await r.json();
+  el.innerHTML = `<div class="stat-grid">
+    <div class="stat-card"><div class="stat-label">Total signals</div><div class="stat-value">${a.total_signals||0}</div></div>
+    <div class="stat-card"><div class="stat-label">Followers</div><div class="stat-value">${a.follower_count||0}</div></div>
+    <div class="stat-card"><div class="stat-label">Fill rate</div><div class="stat-value">${a.fill_rate||0}%</div></div>
+    <div class="stat-card"><div class="stat-label">Avg latency</div><div class="stat-value">${a.avg_latency_ms||0}<span style="font-size:14px">ms</span></div></div>
+    <div class="stat-card"><div class="stat-label">Signals today</div><div class="stat-value">${a.signals_today||0}</div></div>
+    <div class="stat-card"><div class="stat-label">Follower orders</div><div class="stat-value">${a.total_follower_orders||0}</div></div>
+  </div>`;
+}
+
+async function loadFollowers() {
+  const r = await apiFetch('/api/traders/me/followers/');
+  if (!r || !r.ok) return;
+  const fs = await r.json();
+  const el = document.getElementById('followersList');
+  if (!fs.length) { el.innerHTML = '<div class="empty">No followers yet.</div>'; return; }
+  el.innerHTML = fs.map((f,i) => {
+    const initials = (f.user_username||'?').substring(0,2).toUpperCase();
+    return `<div class="follower-row"><div class="avatar avatar-${i%5}">${initials}</div>
+      <div style="flex:1"><div class="trader-name">${escHtml(f.user_username)}</div><div class="trader-style">${escHtml(f.user_email)}</div></div>
+      <span class="exec-badge ${f.exec_mode}">${f.exec_mode}</span>
+      <div style="font-size:12px;color:var(--muted);margin-left:10px;font-weight:600">×${f.size_multiplier}</div>
+    </div>`;
+  }).join('');
+}
+
+/* BROKER */
+const EQUITY_BROKERS = [
+  // Tradeable brokers (live execution supported)
+  { slug: 'WEBULL',       name: 'Webull',              tag: 'Stocks · Options', color: '#1d4ed8', trade: true },
+  { slug: 'ROBINHOOD',    name: 'Robinhood',           tag: 'Stocks · Options', color: '#06b6d4', trade: true },
+  { slug: 'SCHWAB',       name: 'Charles Schwab',      tag: 'Full service',     color: '#0ea5e9', trade: true },
+  { slug: 'IBKR',         name: 'Interactive Brokers', tag: 'Pro',              color: '#dc2626', trade: true },
+  { slug: 'TASTYTRADE',   name: 'tastytrade',          tag: 'Options',          color: '#0f766e', trade: true },
+  { slug: 'TRADIER',      name: 'Tradier',             tag: 'Options',          color: '#7e22ce', trade: true },
+  { slug: 'ALPACA',       name: 'Alpaca',              tag: 'API · Stocks',     color: '#facc15', trade: true },
+  { slug: 'PUBLIC',       name: 'Public',              tag: 'Stocks',           color: '#0f172a', trade: true },
+  { slug: 'QUESTRADE',    name: 'Questrade',           tag: 'CA · Stocks',      color: '#0284c7', trade: true },
+  { slug: 'TRADING212',   name: 'Trading 212',         tag: 'EU · Stocks',      color: '#0a3a4f', trade: true },
+  // Read-only brokers (portfolio view only — no copy trading)
+  { slug: 'FIDELITY',     name: 'Fidelity',            tag: 'Read-only',        color: '#16a34a', trade: false },
+  { slug: 'ETRADE',       name: 'E*TRADE',             tag: 'Read-only',        color: '#7c3aed', trade: false },
+  { slug: 'VANGUARD',     name: 'Vanguard',            tag: 'Read-only',        color: '#b91c1c', trade: false },
+  { slug: 'ALLY',         name: 'Ally Invest',         tag: 'Read-only',        color: '#3b82f6', trade: false },
+  { slug: 'M1FINANCE',    name: 'M1 Finance',          tag: 'Read-only',        color: '#0891b2', trade: false },
+  { slug: 'WEALTHSIMPLE', name: 'Wealthsimple',        tag: 'Read-only',        color: '#1e293b', trade: false },
+];
+async function openBrokerModal() {
+  // Always render the available-brokers grid
+  const grid = document.getElementById('brokerGrid');
+  grid.innerHTML = EQUITY_BROKERS.map(b => {
+    const onClick = b.trade ? `connectSnapTrade('${b.slug}')` : `showToast('${b.name} only supports portfolio viewing — no copy trading. Try Webull, Robinhood, Schwab, or IBKR.')`;
+    const cls = b.trade ? 'broker-tile' : 'broker-tile readonly';
+    return `<button class="${cls}" onclick="${onClick}">
+      <div class="broker-logo" style="background:${b.color}">${b.name.substring(0,2).toUpperCase()}</div>
+      <div><div class="broker-tile-name">${b.name}</div><div class="broker-tile-sub">${b.tag}</div></div>
+    </button>`;
+  }).join('');
+  document.getElementById('brokerModal').classList.remove('hidden');
+
+  // Fetch current connections and populate the connected section
+  const connectedSection = document.getElementById('connectedBrokersSection');
+  const connectedList = document.getElementById('connectedBrokersList');
+  const availableLabel = document.getElementById('availableBrokersLabel');
+  const intro = document.getElementById('brokerModalIntro');
+  const title = document.getElementById('brokerModalTitle');
+
+  connectedSection.style.display = 'none';
+  availableLabel.style.display = 'none';
+  intro.style.display = '';
+  title.textContent = 'Connect your broker';
+
+  try {
+    const r = await apiFetch('/api/brokers/connections/');
+    if (!r || !r.ok) return;
+    const conns = await r.json();
+    const active = conns.filter(c => c.status === 'connected');
+    if (active.length) {
+      title.textContent = 'Your brokers';
+      intro.style.display = 'none';
+      availableLabel.style.display = 'block';
+      connectedSection.style.display = 'block';
+      connectedList.innerHTML = active.map(c => {
+        const name = c.snaptrade_brokerage_name || c.broker || 'Broker';
+        const initials = name.substring(0, 2).toUpperCase();
+        return `<div class="connected-broker-tile">
+          <div class="broker-logo" style="background:#16a34a">${initials}</div>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span class="status-dot"></span>
+              <div class="broker-tile-name">${name}</div>
+            </div>
+            <div class="broker-tile-sub">Connected · via SnapTrade</div>
+          </div>
+          <button class="disconnect-btn" onclick="disconnectBroker()">Disconnect</button>
+        </div>`;
+      }).join('');
+    }
+  } catch (e) { /* ignore */ }
+}
+function closeBrokerModal() { document.getElementById('brokerModal').classList.add('hidden'); }
+
+async function disconnectBroker() {
+  if (!confirm('Disconnect this broker? Your trades will stop copying until you reconnect.')) return;
+  const r = await apiFetch('/api/brokers/disconnect/snaptrade/', { method: 'DELETE' });
+  if (r && (r.ok || r.status === 204)) {
+    showToast('Broker disconnected');
+    closeBrokerModal();
+    await loadBroker();
+  } else {
+    showToast('Could not disconnect broker');
+  }
+}
+async function connectSnapTrade(brokerSlug) {
+  const qs = brokerSlug ? `?broker=${encodeURIComponent(brokerSlug)}` : '';
+  const r = await apiFetch(`/api/brokers/connect/snaptrade/${qs}`);
+  if (!r || !r.ok) {
+    const d = r ? await r.json().catch(()=>({})) : {};
+    showToast('Could not start broker connection: ' + (d.error || d.detail || r?.status || 'unknown'));
+    return;
+  }
+  const d = await r.json();
+  const url = d.auth_url || d.redirect_url || d.redirect_uri || d.url || d.redirectURI;
+  if (url) window.location.href = url;
+  else showToast('No redirect URL returned');
+}
+
+/* INIT */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !document.getElementById('loginModal').classList.contains('hidden')) handleAuth();
+});
+
+(function init() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('uid') && params.get('token')) {
+    document.getElementById('loggedOutSplash').style.display = 'flex';
+    document.getElementById('resetModal').classList.remove('hidden');
+    return;
+  }
+  if (params.get('snaptrade_status')) {
+    const status = params.get('snaptrade_status');
+    setTimeout(() => showToast(status === 'success' ? '✓ Broker connected!' : 'Broker connection failed'), 600);
+    history.replaceState({}, '', '/');
+  }
+  checkAuth();
+})();
+</script>
+</body>
+</html>
